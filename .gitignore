@@ -3,4 +3,7 @@
 .vs/*
 Library/metadata/*
 Library/ShaderCache/*
-obj/
+obj/*
+Temp/*
+ProjectSettings/*
+Library*/
