@@ -14,11 +14,16 @@ public class UIScript : MonoBehaviour
     public Text ConversationText;
     public Transform InventoryPopup;
 
+    private static UIScript _instance;
+
     private bool _messageDisplayed = false;
 
     private int _conversationIndex = 0;
-    string[] options = new string[] { "Do you study?", "Wanna hear a joke?", "Look at these rocks", "Gloagburn sucks", "Goodbye" };
+    string[] currentOptions = new string[] { "Do you study?", "Wanna hear a joke?", "Look at these rocks", "Gloagburn sucks", "Goodbye" };
 
+    public static UIScript Instance() { return _instance; }
+
+    public UIScript() { _instance = this; }
 
     private void Update()
     {
@@ -32,7 +37,7 @@ public class UIScript : MonoBehaviour
                     Destroy(SpeechWindowContainer.GetChild(v).gameObject);
                 }
 
-                if (options[_conversationIndex] == "Goodbye")
+                if (currentOptions[_conversationIndex] == "Goodbye")
                 {
                     ConversationMenuActive = false;
                     PlayerConversation.SetActive(false);
@@ -103,14 +108,14 @@ public class UIScript : MonoBehaviour
             Destroy(SpeechWindowContainer.GetChild(v).gameObject);
         }
 
-        foreach (var v in options)
+        foreach (var v in currentOptions)
         {
             var speech = Instantiate(SpeechOptionPrefab, new Vector3(0, 0, 0), Quaternion.identity, SpeechWindowContainer);
             speech.GetComponentInChildren<Text>().text = v;
         }
 
         // select first option
-        if (options.Length > 0)
+        if (currentOptions.Length > 0)
         {
             SpeechWindowContainer.GetChild(0).GetComponentInChildren<Text>().color = new Color(1, 1, 1);
         }

@@ -33,8 +33,7 @@ public class PlayerScript : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.I) && _onGround)
         {
-            var uiController = GameObject.Find("UI Controller").GetComponent<UIScript>();
-            _inventoryOpen = uiController.ToggleInventory(transform);
+            _inventoryOpen = UIScript.Instance().ToggleInventory(transform);
         }
 
         if (!_inventoryOpen)

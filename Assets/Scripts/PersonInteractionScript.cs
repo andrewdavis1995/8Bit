@@ -34,9 +34,8 @@ public class PersonInteractionScript : MonoBehaviour
 
     public void Converse(Transform playerPosition)
     {
-        var uiController = GameObject.Find("UI Controller");
         _isInteracting = true;
-        uiController.GetComponent<UIScript>().StartConversation(this);
+        UIScript.Instance().GetComponent<UIScript>().StartConversation(this);
         if(playerPosition.position.x < transform.position.x)
         {
             _renderer.flipX = true;
