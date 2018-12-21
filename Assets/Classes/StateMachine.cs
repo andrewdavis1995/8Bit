@@ -62,7 +62,7 @@ public class StateMachine
             { new StateTransition(      ProcessState.Inactive,                 Command.Blocked),                       ProcessState.Listening },
 
             { new StateTransition(      ProcessState.MenuOptions,              Command.GoToCompliments),               ProcessState.SelectingCompliment },
-            { new StateTransition(      ProcessState.MenuOptions,              Command.GoToJokes),                     ProcessState.TellingJoke },
+            { new StateTransition(      ProcessState.MenuOptions,              Command.GoToJokes),                     ProcessState.SelectingJoke },
             { new StateTransition(      ProcessState.MenuOptions,              Command.GoToQuestions),                 ProcessState.BrowsingQuestions },
             { new StateTransition(      ProcessState.MenuOptions,              Command.Exit),                          ProcessState.Ended },
 
@@ -98,5 +98,23 @@ public class StateMachine
     public ProcessState MoveNext(Command command)
     {
         CurrentState = GetNext(command); return CurrentState;
+    }
+    public ProcessState MoveNext(string commandStr)
+    {
+        Command command = GetCommandFromString(commandStr);
+        CurrentState = GetNext(command); return CurrentState;
+    }
+
+    private Command GetCommandFromString(string commandStr)
+    {
+        // all options
+        commandStr = commandStr.ToLower();
+        if(commandStr == "Goodbye")
+        {
+
+        }
+
+
+        return Command.BackToMenu;
     }
 }

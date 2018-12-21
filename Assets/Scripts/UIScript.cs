@@ -5,7 +5,6 @@ using UnityEngine.UI;
 public class UIScript : MonoBehaviour
 {
     public GameObject PlayerConversation;
-    public static bool ConversationMenuActive = false;
     public PersonInteractionScript PersonActive;
 
     public Transform SpeechOptionPrefab;
@@ -15,11 +14,10 @@ public class UIScript : MonoBehaviour
     public Transform InventoryPopup;
 
     private static UIScript _instance;
-
-    private bool _messageDisplayed = false;
-
+    
     private int _conversationIndex = 0;
-    string[] currentOptions = new string[] { "Do you study?", "Wanna hear a joke?", "Look at these rocks", "Gloagburn sucks", "Goodbye" };
+    string[] currentOptions = new string[] { };
+    Command[] currentCommands = new Command[] { };
 
     public static UIScript Instance() { return _instance; }
 
@@ -27,33 +25,29 @@ public class UIScript : MonoBehaviour
 
     private void Update()
     {
-        if (ConversationMenuActive)
+        if (PersonInteractionScript.ConversationActive)
         {
             if (Input.GetKeyDown(KeyCode.Return))
             {
-                // remove existing
-                for (var v = 0; v < SpeechWindowContainer.childCount; v++)
-                {
-                    Destroy(SpeechWindowContainer.GetChild(v).gameObject);
-                }
+                RemoveMenuOptions();
+                PersonActive.Status.MoveNext(currentCommands[_conversationIndex]);
+                currentOptions = PersonActive.GetOptions(ref currentCommands);
 
-                if (currentOptions[_conversationIndex] == "Goodbye")
+                if (PersonActive.Status.CurrentState == ProcessState.Ended)
                 {
-                    ConversationMenuActive = false;
-                    PlayerConversation.SetActive(false);
-                    PersonActive.ConversationOver();
+                    Finished();
                 }
-                else if (!_messageDisplayed)
+                else if (PlayerSpeaking())
                 {
-                    PlayerConversation.SetActive(false);
-                    ConversationWindow.gameObject.SetActive(true);
-                    ConversationText.text = GetResponse();
-                    _messageDisplayed = true;
+                    ShowTalking();
+                }
+                else if (PersonActive.Status.CurrentState != ProcessState.Listening)
+                {
+                    ShowMenu();
                 }
                 else
                 {
-                    _messageDisplayed = false;
-                    ShowMenu();
+                    ShowResponse();
                 }
             }
             else if (Input.GetKeyDown(KeyCode.UpArrow))
@@ -67,9 +61,21 @@ public class UIScript : MonoBehaviour
         }
     }
 
-    public string GetResponse()
+    private bool PlayerSpeaking()
     {
-        return "I have no response";
+        return
+           PersonActive.Status.CurrentState == ProcessState.TellingCompliment
+        || PersonActive.Status.CurrentState == ProcessState.TellingJoke
+        || PersonActive.Status.CurrentState == ProcessState.AskingQuestion;
+    }
+
+    internal void BlockConversation(PersonInteractionScript personInteractionScript)
+    {
+        PersonActive = personInteractionScript;
+        PersonActive.Status.MoveNext(Command.Blocked);
+        currentOptions = PersonActive.GetOptions(ref currentCommands);
+        currentCommands = new Command[] { Command.Exit };
+        ShowResponse();
     }
 
     void ChangeOption(int direction)
@@ -84,6 +90,8 @@ public class UIScript : MonoBehaviour
     internal void StartConversation(PersonInteractionScript personInteractionScript)
     {
         PersonActive = personInteractionScript;
+        PersonActive.Status.MoveNext(Command.StartConversation);
+        currentOptions = PersonActive.GetOptions(ref currentCommands);
         ShowMenu();
     }
 
@@ -102,11 +110,8 @@ public class UIScript : MonoBehaviour
     private void ShowMenu()
     {
         _conversationIndex = 0;
-        // remove existing
-        for (var v = 0; v < SpeechWindowContainer.childCount; v++)
-        {
-            Destroy(SpeechWindowContainer.GetChild(v).gameObject);
-        }
+        RemoveMenuOptions();
+        int originalChildCount = SpeechWindowContainer.childCount;
 
         foreach (var v in currentOptions)
         {
@@ -117,12 +122,50 @@ public class UIScript : MonoBehaviour
         // select first option
         if (currentOptions.Length > 0)
         {
-            SpeechWindowContainer.GetChild(0).GetComponentInChildren<Text>().color = new Color(1, 1, 1);
+            int r = SpeechWindowContainer.childCount;
+            SpeechWindowContainer.GetChild(originalChildCount).GetComponentInChildren<Text>().color = new Color(1, 1, 1);
         }
 
-        ConversationMenuActive = true;
+        RepositionWindows();
+    }
 
+    private void RemoveMenuOptions()
+    {
+        // remove existing
+        for (var v = 0; v < SpeechWindowContainer.childCount; v++)
+        {
+            Destroy(SpeechWindowContainer.GetChild(v).gameObject);
+        }
+    }
 
+    private void ShowResponse()
+    {
+        _conversationIndex = 0;
+        ConversationText.text = PersonActive.person.Name + " is talking";
+        RepositionWindows();
+        PlayerConversation.gameObject.SetActive(false);
+        ConversationWindow.gameObject.SetActive(true);
+    }
+
+    private void ShowTalking()
+    {
+        _conversationIndex = 0;
+        ConversationText.text = "You are talking";
+        RepositionWindows();
+        PlayerConversation.gameObject.SetActive(false);
+        ConversationWindow.gameObject.SetActive(true);
+    }
+
+    private void Finished()
+    {
+        _conversationIndex = 0;
+        PlayerConversation.gameObject.SetActive(false);
+        ConversationWindow.gameObject.SetActive(false);
+        PersonActive.ConversationOver();
+    }
+
+    private void RepositionWindows()
+    {
         var popupPos = PersonActive.transform.position;
         popupPos.x -= .75f;
         popupPos.y += 1.5f;
@@ -133,4 +176,5 @@ public class UIScript : MonoBehaviour
         PlayerConversation.gameObject.SetActive(true);
         ConversationWindow.gameObject.SetActive(false);
     }
+
 }

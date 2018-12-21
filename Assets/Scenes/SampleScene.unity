@@ -3743,7 +3743,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: -0.016012058}
+  m_Offset: {x: 0, y: -0.02995871}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -3754,7 +3754,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.8, y: 0.16797587}
+  m_Size: {x: 0.8, y: 0.14008257}
   m_EdgeRadius: 0
 --- !u!212 &199456923
 SpriteRenderer:
@@ -6306,7 +6306,7 @@ GameObject:
   - component: {fileID: 322461665}
   m_Layer: 0
   m_Name: tree2 (1)
-  m_TagString: Person
+  m_TagString: Tree
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -9428,7 +9428,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: -0.016012058}
+  m_Offset: {x: 0, y: -0.033445343}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -9439,7 +9439,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.8, y: 0.16797587}
+  m_Size: {x: 0.8, y: 0.1331093}
   m_EdgeRadius: 0
 --- !u!212 &472732361
 SpriteRenderer:
@@ -23294,7 +23294,7 @@ GameObject:
   - component: {fileID: 1132005073}
   m_Layer: 0
   m_Name: tree3
-  m_TagString: Person
+  m_TagString: Tree
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -24144,7 +24144,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: -0.034437403}
+  m_Offset: {x: 0, y: -0.030535325}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -24155,7 +24155,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.8, y: 0.13112518}
+  m_Size: {x: 0.8, y: 0.13892934}
   m_EdgeRadius: 0
 --- !u!212 &1149483615
 SpriteRenderer:
@@ -42322,7 +42322,7 @@ GameObject:
   - component: {fileID: 2095182566}
   m_Layer: 0
   m_Name: tree2
-  m_TagString: Person
+  m_TagString: Tree
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -42991,7 +42991,7 @@ GameObject:
   - component: {fileID: 2120080226}
   m_Layer: 0
   m_Name: tree1
-  m_TagString: Person
+  m_TagString: Tree
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

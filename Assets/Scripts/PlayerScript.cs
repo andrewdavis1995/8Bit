@@ -29,7 +29,7 @@ public class PlayerScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (UIScript.ConversationMenuActive) return;
+        if (PersonInteractionScript.ConversationActive) return;
 
         if (Input.GetKeyDown(KeyCode.I) && _onGround)
         {
@@ -61,6 +61,16 @@ public class PlayerScript : MonoBehaviour
             {
                 _animator.ResetTrigger("Run");
                 _animator.SetTrigger("Stop");
+                if (_itemsInBounds[i].transform.position.x < transform.position.x)
+                {
+                    transform.position = new Vector3(_itemsInBounds[i].transform.position.x + _itemsInBounds[i].transform.localScale.x/2 +0.1f, transform.position.y, transform.position.z);
+                    _renderer.flipX = true;
+                }
+                else
+                {
+                    transform.position = new Vector3(_itemsInBounds[i].transform.position.x - transform.localScale.x/2 -0.1f, transform.position.y, transform.position.z);
+                    _renderer.flipX = false;
+                }
                 _itemsInBounds[i].GetComponent<PersonInteractionScript>().Converse(transform);
             }
         }
