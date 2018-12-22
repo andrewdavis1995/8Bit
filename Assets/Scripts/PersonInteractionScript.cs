@@ -74,20 +74,20 @@ public class PersonInteractionScript : MonoBehaviour
                 return new string[] { "Question 1", "Question 2", "Cancel" };
             case ProcessState.SelectingCompliment:
                 commands = new Command[] { Command.ComplimentSelected, Command.ComplimentSelected, Command.BackToMenu };
-                return new string[] { "Compliment 1", "Compliment 2", "Cancel" };
+                return new string[] { "Compliment Hair", "Compliment Personality", "Cancel" };
             case ProcessState.SelectingJoke:
                 commands = new Command[] { Command.JokeSelected, Command.JokeSelected, Command.BackToMenu };
-                return new string[] { "Joke 1", "Joke 2", "Cancel" };
+                return new string[] { "Scottish Joke", "Disney Joke", "Music Joke" };
 
             case ProcessState.AskingQuestion:
                 commands = new Command[] { Command.FinishedSpeaking };
-                return null;
+                return new string[] { "Question 1", "Question 2", "Cancel" };
             case ProcessState.TellingJoke:
                 commands = new Command[] { Command.FinishedSpeaking };
-                return null;
+                return new string[] { "Scottish Joke", "Disney Joke", "Music Joke" };
             case ProcessState.TellingCompliment:
                 commands = new Command[] { Command.FinishedSpeaking };
-                return null;
+                return new string[] { "Compliment Hair", "Compliment Personality", "Cancel" };
 
             case ProcessState.Listening:
                 commands = new Command[] { Command.DoneListening };
@@ -97,6 +97,7 @@ public class PersonInteractionScript : MonoBehaviour
                 //ProcessState.Inactive:
                 //ProcessState.Ended:
                 commands = null;
+                
                 return null;
         }
     }

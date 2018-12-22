@@ -50,10 +50,12 @@ public class StateMachine
     Dictionary<StateTransition, ProcessState> transitions;
 
     public ProcessState CurrentState { get; set; }
+    public ProcessState PreviousState { get; set; }
 
     public StateMachine()
     {
         CurrentState = ProcessState.Inactive;
+        PreviousState = ProcessState.Inactive;
 
         transitions = new Dictionary<StateTransition, ProcessState>
         {
@@ -86,6 +88,14 @@ public class StateMachine
         };
     }
 
+    internal bool AllowsUpDown()
+    {
+        return CurrentState == ProcessState.MenuOptions
+            || CurrentState == ProcessState.BrowsingQuestions
+            || CurrentState == ProcessState.SelectingCompliment
+            || CurrentState == ProcessState.SelectingJoke;
+    }
+
     public ProcessState GetNext(Command command)
     {
         StateTransition transition = new StateTransition(CurrentState, command);
@@ -97,12 +107,16 @@ public class StateMachine
 
     public ProcessState MoveNext(Command command)
     {
-        CurrentState = GetNext(command); return CurrentState;
+        PreviousState = CurrentState;
+        CurrentState = GetNext(command);
+        return CurrentState;
     }
     public ProcessState MoveNext(string commandStr)
     {
         Command command = GetCommandFromString(commandStr);
-        CurrentState = GetNext(command); return CurrentState;
+        PreviousState = CurrentState;
+        CurrentState = GetNext(command);
+        return CurrentState;
     }
 
     private Command GetCommandFromString(string commandStr)

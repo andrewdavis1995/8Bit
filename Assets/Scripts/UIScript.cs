@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Assets.Classes;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -50,11 +51,11 @@ public class UIScript : MonoBehaviour
                     ShowResponse();
                 }
             }
-            else if (Input.GetKeyDown(KeyCode.UpArrow))
+            else if (Input.GetKeyDown(KeyCode.UpArrow) && PersonActive.Status.AllowsUpDown())
             {
                 ChangeOption(-1);
             }
-            else if(Input.GetKeyDown(KeyCode.DownArrow))
+            else if(Input.GetKeyDown(KeyCode.DownArrow) && PersonActive.Status.AllowsUpDown())
             {
                 ChangeOption(1);
             }
@@ -75,6 +76,7 @@ public class UIScript : MonoBehaviour
         PersonActive.Status.MoveNext(Command.Blocked);
         currentOptions = PersonActive.GetOptions(ref currentCommands);
         currentCommands = new Command[] { Command.Exit };
+        RepositionWindows(false);
         ShowResponse();
     }
 
@@ -82,14 +84,18 @@ public class UIScript : MonoBehaviour
     {
         SpeechWindowContainer.GetChild(_conversationIndex).GetComponentInChildren<Text>().color = new Color(.5f, .5f, .5f);
         _conversationIndex += direction;
-        if (_conversationIndex < 0) _conversationIndex = 0;
-        if (_conversationIndex >= SpeechWindowContainer.childCount) _conversationIndex = SpeechWindowContainer.childCount -1;
+
+        // wrap around
+        if (_conversationIndex < 0) _conversationIndex = SpeechWindowContainer.childCount-1;
+        if (_conversationIndex >= SpeechWindowContainer.childCount) _conversationIndex = 0;
+
         SpeechWindowContainer.GetChild(_conversationIndex).GetComponentInChildren<Text>().color = new Color(1, 1, 1);
     }
 
     internal void StartConversation(PersonInteractionScript personInteractionScript)
     {
         PersonActive = personInteractionScript;
+        PersonActive.Status.CurrentState = ProcessState.MenuOptions;
         PersonActive.Status.MoveNext(Command.StartConversation);
         currentOptions = PersonActive.GetOptions(ref currentCommands);
         ShowMenu();
@@ -97,6 +103,8 @@ public class UIScript : MonoBehaviour
 
     public bool ToggleInventory(Transform player)
     {
+        var playerScript = player.gameObject.GetComponent<PlayerScript>();
+
         InventoryPopup.gameObject.SetActive(!InventoryPopup.gameObject.activeInHierarchy);
         var popupPos = player.position;
         popupPos.x -= .75f;
@@ -126,7 +134,9 @@ public class UIScript : MonoBehaviour
             SpeechWindowContainer.GetChild(originalChildCount).GetComponentInChildren<Text>().color = new Color(1, 1, 1);
         }
 
-        RepositionWindows();
+        RepositionWindows(true);
+        PlayerConversation.gameObject.SetActive(true);
+        ConversationWindow.gameObject.SetActive(false);
     }
 
     private void RemoveMenuOptions()
@@ -141,19 +151,50 @@ public class UIScript : MonoBehaviour
     private void ShowResponse()
     {
         _conversationIndex = 0;
-        ConversationText.text = PersonActive.person.Name + " is talking";
-        RepositionWindows();
+        ConversationText.text = GetResponse();
+        RepositionWindows(false);
         PlayerConversation.gameObject.SetActive(false);
         ConversationWindow.gameObject.SetActive(true);
+    }
+
+    private string GetResponse()
+    {
+        switch (PersonActive.Status.PreviousState)
+        {
+            case ProcessState.AskingQuestion:
+                return "I dunno the answer to that question";
+            case ProcessState.TellingCompliment:
+                return "That's so nice";
+            case ProcessState.TellingJoke:
+                return "Hahahahaha hilarious!";
+        }
+
+        return "I don't know what to say";
     }
 
     private void ShowTalking()
     {
         _conversationIndex = 0;
-        ConversationText.text = "You are talking";
-        RepositionWindows();
+        ConversationText.text = GetSpeechOutput();
+        RepositionWindows(true);
         PlayerConversation.gameObject.SetActive(false);
         ConversationWindow.gameObject.SetActive(true);
+    }
+
+    private string GetSpeechOutput()
+    {
+        switch (PersonActive.Status.PreviousState)
+        {
+            case ProcessState.BrowsingQuestions:
+                // who started that fire?
+                return "Who's got the look?";
+            case ProcessState.SelectingCompliment:
+                return ConversationFetcher.GetCompliment(currentOptions[_conversationIndex].Replace("Joke", "").Trim());
+            case ProcessState.SelectingJoke:
+                return ConversationFetcher.GetJoke(currentOptions[_conversationIndex].Replace("Compliment", "").Trim());
+        }
+
+        return "Erm... Words...?";
     }
 
     private void Finished()
@@ -164,17 +205,24 @@ public class UIScript : MonoBehaviour
         PersonActive.ConversationOver();
     }
 
-    private void RepositionWindows()
+    private void RepositionWindows(bool usePlayerPosition)
     {
         var popupPos = PersonActive.transform.position;
         popupPos.x -= .75f;
         popupPos.y += 1.5f;
 
+        var popupPos2 = GameObject.FindGameObjectWithTag("Player").transform.position;
+        popupPos2.x -= .75f;
+        popupPos2.y += 1.5f;
+
         var screenPos = Camera.main.WorldToScreenPoint(popupPos);
-        PlayerConversation.transform.position = screenPos;
+        var screenPos2 = Camera.main.WorldToScreenPoint(popupPos2);
+
+        if (usePlayerPosition)
+            ConversationWindow.position = screenPos2;
+        else
         ConversationWindow.position = screenPos;
-        PlayerConversation.gameObject.SetActive(true);
-        ConversationWindow.gameObject.SetActive(false);
+            PlayerConversation.transform.position = screenPos;
     }
 
 }

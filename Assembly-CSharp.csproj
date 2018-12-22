@@ -59,6 +59,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Classes\ConversationFetcher.cs" />
     <Compile Include="Assets\Classes\JokeManagement.cs" />
     <Compile Include="Assets\Classes\Person.cs" />
     <Compile Include="Assets\Classes\PersonEditor.cs" />
@@ -67,6 +68,7 @@
     <Compile Include="Assets\Scripts\ClimbableObject.cs" />
     <Compile Include="Assets\Scripts\ClimbingScript.cs" />
     <Compile Include="Assets\Scripts\CollectableObject.cs" />
+    <Compile Include="Assets\Scripts\FollowScript.cs" />
     <Compile Include="Assets\Scripts\PatrolScript.cs" />
     <Compile Include="Assets\Scripts\PersonInteractionScript.cs" />
     <Compile Include="Assets\Scripts\PlatformScript.cs" />

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class PlayerScript : MonoBehaviour
@@ -54,24 +55,27 @@ public class PlayerScript : MonoBehaviour
 
     private void Talk()
     {
+        var sorted = _itemsInBounds.OrderBy(i => Math.Abs(i.transform.position.x - transform.position.x)).ToList();
+
         // anyone to talk to?
-        for (int i = 0; i < _itemsInBounds.Count; i++)
+        for (int i = 0; i < sorted.Count; i++)
         {
-            if (_itemsInBounds[i].tag == "Person")
+            if (sorted[i].tag == "Person")
             {
                 _animator.ResetTrigger("Run");
                 _animator.SetTrigger("Stop");
-                if (_itemsInBounds[i].transform.position.x < transform.position.x)
+                if (sorted[i].transform.position.x < transform.position.x)
                 {
-                    transform.position = new Vector3(_itemsInBounds[i].transform.position.x + _itemsInBounds[i].transform.localScale.x/2 +0.1f, transform.position.y, transform.position.z);
+                    transform.position = new Vector3(sorted[i].transform.position.x + sorted[i].transform.localScale.x/2 +0.1f, transform.position.y, transform.position.z);
                     _renderer.flipX = true;
                 }
                 else
                 {
-                    transform.position = new Vector3(_itemsInBounds[i].transform.position.x - transform.localScale.x/2 -0.1f, transform.position.y, transform.position.z);
+                    transform.position = new Vector3(sorted[i].transform.position.x - transform.localScale.x/2 -0.1f, transform.position.y, transform.position.z);
                     _renderer.flipX = false;
                 }
-                _itemsInBounds[i].GetComponent<PersonInteractionScript>().Converse(transform);
+                sorted[i].GetComponent<PersonInteractionScript>().Converse(transform);
+                break;
             }
         }
     }
@@ -209,5 +213,7 @@ public class PlayerScript : MonoBehaviour
             Sounds.Play();
         }
     }
+
+    public bool Grounded() { return _onGround; }
 
 }
