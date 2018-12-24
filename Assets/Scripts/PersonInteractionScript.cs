@@ -76,15 +76,15 @@ public class PersonInteractionScript : MonoBehaviour
                 commands = new Command[] { Command.ComplimentSelected, Command.ComplimentSelected, Command.BackToMenu };
                 return new string[] { "Compliment Hair", "Compliment Personality", "Cancel" };
             case ProcessState.SelectingJoke:
-                commands = new Command[] { Command.JokeSelected, Command.JokeSelected, Command.BackToMenu };
-                return new string[] { "Scottish Joke", "Disney Joke", "Music Joke" };
+                commands = new Command[] { Command.JokeSelected, Command.JokeSelected, Command.JokeSelected, Command.BackToMenu };
+                return new string[] { "Scottish Joke", "Disney Joke", "Music Joke", "Cancel" };
 
             case ProcessState.AskingQuestion:
                 commands = new Command[] { Command.FinishedSpeaking };
                 return new string[] { "Question 1", "Question 2", "Cancel" };
             case ProcessState.TellingJoke:
                 commands = new Command[] { Command.FinishedSpeaking };
-                return new string[] { "Scottish Joke", "Disney Joke", "Music Joke" };
+                return new string[] { "Scottish Joke", "Disney Joke", "Music Joke", "Cancel" };
             case ProcessState.TellingCompliment:
                 commands = new Command[] { Command.FinishedSpeaking };
                 return new string[] { "Compliment Hair", "Compliment Personality", "Cancel" };

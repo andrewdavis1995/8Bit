@@ -1,5 +1,6 @@
 ﻿using Assets.Classes;
 using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,6 +8,10 @@ public class UIScript : MonoBehaviour
 {
     public GameObject PlayerConversation;
     public PersonInteractionScript PersonActive;
+
+    public Sprite[] Collectables;
+
+    public PlayerScript Player;
 
     public Transform SpeechOptionPrefab;
     public Transform SpeechWindowContainer;
@@ -20,6 +25,11 @@ public class UIScript : MonoBehaviour
     string[] currentOptions = new string[] { };
     Command[] currentCommands = new Command[] { };
 
+    private int _inventoryIndex = 0;
+    private const int INVENTORY_ITEMS = 9;
+
+
+
     public static UIScript Instance() { return _instance; }
 
     public UIScript() { _instance = this; }
@@ -28,38 +38,107 @@ public class UIScript : MonoBehaviour
     {
         if (PersonInteractionScript.ConversationActive)
         {
-            if (Input.GetKeyDown(KeyCode.Return))
-            {
-                RemoveMenuOptions();
-                PersonActive.Status.MoveNext(currentCommands[_conversationIndex]);
-                currentOptions = PersonActive.GetOptions(ref currentCommands);
+            HandleConversationInput();
+        }
+        else if (InventoryOpen())
+        {
+            HandleInventoryInput();
+        }
+    }
 
-                if (PersonActive.Status.CurrentState == ProcessState.Ended)
-                {
-                    Finished();
-                }
-                else if (PlayerSpeaking())
-                {
-                    ShowTalking();
-                }
-                else if (PersonActive.Status.CurrentState != ProcessState.Listening)
-                {
-                    ShowMenu();
-                }
-                else
-                {
-                    ShowResponse();
-                }
-            }
-            else if (Input.GetKeyDown(KeyCode.UpArrow) && PersonActive.Status.AllowsUpDown())
+    private void HandleConversationInput()
+    {
+        if (Input.GetKeyDown(KeyCode.Return))
+        {
+            RemoveMenuOptions();
+            PersonActive.Status.MoveNext(currentCommands[_conversationIndex]);
+            currentOptions = PersonActive.GetOptions(ref currentCommands);
+
+            if (PersonActive.Status.CurrentState == ProcessState.Ended)
             {
-                ChangeOption(-1);
+                Finished();
             }
-            else if(Input.GetKeyDown(KeyCode.DownArrow) && PersonActive.Status.AllowsUpDown())
+            else if (PlayerSpeaking())
             {
-                ChangeOption(1);
+                ShowTalking();
+            }
+            else if (PersonActive.Status.CurrentState != ProcessState.Listening)
+            {
+                ShowMenu();
+            }
+            else
+            {
+                ShowResponse();
             }
         }
+        else if (Input.GetKeyDown(KeyCode.UpArrow) && PersonActive.Status.AllowsUpDown())
+        {
+            ChangeOption(-1);
+        }
+        else if (Input.GetKeyDown(KeyCode.DownArrow) && PersonActive.Status.AllowsUpDown())
+        {
+            ChangeOption(1);
+        }
+    }
+
+    private void HandleInventoryInput()
+    {
+        if (Input.GetKeyDown(KeyCode.Return))
+        {
+
+        }
+        else if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            InventoryIndexChanged(-3);
+        }
+        else if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            InventoryIndexChanged(3);
+        }
+        else if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            InventoryIndexChanged(1);
+        }
+        else if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            InventoryIndexChanged(-1);
+        }
+    }
+
+    public void InventoryIndexChanged(int changed)
+    {
+        // reset previously selected one
+        var item = InventoryPopup.GetChild(0).GetChild(_inventoryIndex);
+        var image = item.GetComponentInChildren<Image>();
+        image.color = new Color(1, 1, 1);
+        if (_inventoryIndex >= Player.GetCollectedItemsGrouped().Count())
+        {
+            item.GetComponentsInChildren<Image>()[1].color = new Color(0, 0, 0, 0);
+            image.color = new Color(0.2f, 0.2f, 0.2f);
+        }
+        else
+        {
+            item.GetComponentsInChildren<Image>()[1].color = new Color(1,1,1,1);
+        }
+
+        _inventoryIndex += changed;
+
+        if (_inventoryIndex < 0) _inventoryIndex += INVENTORY_ITEMS;
+        if (_inventoryIndex >= INVENTORY_ITEMS) _inventoryIndex -= INVENTORY_ITEMS;
+
+        // update new one
+        var item2 = InventoryPopup.GetChild(0).GetChild(_inventoryIndex);
+        var image2 = item2.GetComponentInChildren<Image>();
+        image2.color = new Color(0.4f, 0.6f, 0.8f);
+
+        var txtDescription = InventoryPopup.GetChild(1).GetComponent<Text>();
+        var strOutput = " --- ";
+        if (_inventoryIndex < Player.GetCollectedItemsGrouped().Count)
+        {
+            var items = Player.GetCollectedItemsGrouped()[_inventoryIndex];
+            strOutput = items.First().ItemName;
+        }
+        txtDescription.text = strOutput;
     }
 
     private bool PlayerSpeaking()
@@ -95,7 +174,7 @@ public class UIScript : MonoBehaviour
     internal void StartConversation(PersonInteractionScript personInteractionScript)
     {
         PersonActive = personInteractionScript;
-        PersonActive.Status.CurrentState = ProcessState.MenuOptions;
+        PersonActive.Status.CurrentState = ProcessState.Inactive;
         PersonActive.Status.MoveNext(Command.StartConversation);
         currentOptions = PersonActive.GetOptions(ref currentCommands);
         ShowMenu();
@@ -105,13 +184,38 @@ public class UIScript : MonoBehaviour
     {
         var playerScript = player.gameObject.GetComponent<PlayerScript>();
 
+        var grouped = playerScript.GetCollectedItemsGrouped();
+
+        for (int i = 0; i < grouped.Count && i < InventoryPopup.GetChild(0).childCount; i++)
+        {
+            var display = InventoryPopup.GetChild(0).GetChild(i);
+            display.GetComponentInChildren<Text>().text = grouped[i].Count().ToString();
+            display.GetComponentInChildren<Image>().color = new Color(1, 1, 1);
+            display.GetComponentsInChildren<Image>()[1].color = new Color(1, 1, 1, 1);
+            display.GetComponentsInChildren<Image>()[1].sprite = GetCollectableImage(grouped[i].Key);
+        }
+
+        for (int i = grouped.Count; i < InventoryPopup.GetChild(0).childCount; i++)
+        {
+            var display = InventoryPopup.GetChild(0).GetChild(i);
+            display.GetComponentInChildren<Image>().color = new Color(0.2f, 0.2f, 0.2f);
+            display.GetComponentsInChildren<Image>()[1].color = new Color(0, 0, 0, 0);
+        }
+
         InventoryPopup.gameObject.SetActive(!InventoryPopup.gameObject.activeInHierarchy);
         var popupPos = player.position;
         popupPos.x -= .75f;
         popupPos.y += 1.5f;
 
+        InventoryIndexChanged(0);
+
         var screenPos = Camera.main.WorldToScreenPoint(popupPos);
         InventoryPopup.position = screenPos;
+        return InventoryPopup.gameObject.activeInHierarchy;
+    }
+
+    public bool InventoryOpen()
+    {
         return InventoryPopup.gameObject.activeInHierarchy;
     }
 
@@ -211,7 +315,7 @@ public class UIScript : MonoBehaviour
         popupPos.x -= .75f;
         popupPos.y += 1.5f;
 
-        var popupPos2 = GameObject.FindGameObjectWithTag("Player").transform.position;
+        var popupPos2 = Player.transform.position;
         popupPos2.x -= .75f;
         popupPos2.y += 1.5f;
 
@@ -223,6 +327,16 @@ public class UIScript : MonoBehaviour
         else
         ConversationWindow.position = screenPos;
             PlayerConversation.transform.position = screenPos;
+    }
+
+    Sprite GetCollectableImage(ObjectType obj)
+    {
+        switch (obj)
+        {
+            case ObjectType.Battery: return Collectables[1];
+            case ObjectType.Stone: return Collectables[2];
+        }
+        return Collectables[0];
     }
 
 }

@@ -136,6 +136,13 @@ public class PlayerScript : MonoBehaviour
             }
         }
     }
+
+    internal List<IGrouping<ObjectType, CollectableObject>> GetCollectedItemsGrouped()
+    {
+        var grouped = _collectedObjects.GroupBy(i => i.ObjectType);
+        return grouped.ToList();
+    }
+
     private void OnCollisionExit2D(Collision2D collision)
     {
         if (collision.transform.tag == "Platform")

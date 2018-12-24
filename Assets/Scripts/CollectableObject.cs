@@ -1,10 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class CollectableObject : MonoBehaviour
 {
     public string ItemName;
+    public ObjectType ObjectType;
 
     // Use this for initialization
     void Start()
@@ -18,4 +17,11 @@ public class CollectableObject : MonoBehaviour
     }
 
 
+}
+
+public enum ObjectType
+{
+    Battery,
+    Stone,
+    Wood
 }
