@@ -14,10 +14,10 @@ namespace Assets.Classes
                 new string[]{"Scottish", "What do you call a Scottish man is is half in his house? Hamish!" },
             };
 
-            var relevant = jokes.Where(j => j[0] == category);
+            var relevant = jokes.Where(j => j[0] == category).ToList();
 
-            var random = UnityEngine.Random.Range(0, jokes.Count);
-            var randomJoke = jokes[random];
+            var random = UnityEngine.Random.Range(0, relevant.Count());
+            var randomJoke = relevant[random];
             return randomJoke[1];
         }
 
@@ -29,11 +29,28 @@ namespace Assets.Classes
                 new string[]{"Personality", "You're awesome!" },
             };
 
-            var relevant = compliments.Where(j => j[0] == category);
+            var relevant = compliments.Where(j => j[0] == category).ToList();
 
-            var random = UnityEngine.Random.Range(0, compliments.Count);
-            var randomCompliment = compliments[random];
+            var random = UnityEngine.Random.Range(0, relevant.Count());
+            var randomCompliment = relevant[random];
             return randomCompliment[1];
+        }
+
+        public static string GetQuestion(string category)
+        {
+            List<string[]> questions = new List<string[]>
+            {
+                new string[]{ "Ask how to build a ladder", "How do you build a ladder?" },
+                new string[]{ "Ask age", "How old are you?" },
+                new string[]{ "Ask name", "What is your name?" },
+                new string[]{ "Ask where to buy weapons", "Where can I buy weapons?" },
+            };
+
+            var relevant = questions.Where(q => q[0] == category).ToList();
+
+            var random = UnityEngine.Random.Range(0, relevant.Count());
+            var randomQuestion = relevant[random];
+            return randomQuestion[1];
         }
     }
 }

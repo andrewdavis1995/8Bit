@@ -10,6 +10,8 @@ public class PersonInteractionScript : MonoBehaviour
     private SpriteRenderer _renderer;
     private bool _isInteracting = false;
     public StateMachine Status = new StateMachine();
+    public KnowledgeCategory[] Knowledge;
+    public KnowledgeCategory[] KnowledgeRefuse;
 
     public static bool ConversationActive = false;
 
@@ -70,8 +72,8 @@ public class PersonInteractionScript : MonoBehaviour
                 commands = new Command[] { Command.GoToQuestions, Command.GoToCompliments, Command.GoToJokes, Command.Exit };
                 return new string[] { "Ask Question", "Pay Compliment", "Tell Joke", "Goodbye" };
             case ProcessState.BrowsingQuestions:
-                commands = new Command[] { Command.QuestionSelected, Command.QuestionSelected, Command.BackToMenu };
-                return new string[] { "Question 1", "Question 2", "Cancel" };
+                commands = new Command[] { Command.QuestionSelected, Command.QuestionSelected, Command.QuestionSelected, Command.QuestionSelected, Command.BackToMenu };
+                return new string[] { "Ask age", "Ask how to build a ladder", "Ask name", "Ask where to buy weapons", "Cancel" };
             case ProcessState.SelectingCompliment:
                 commands = new Command[] { Command.ComplimentSelected, Command.ComplimentSelected, Command.BackToMenu };
                 return new string[] { "Compliment Hair", "Compliment Personality", "Cancel" };
@@ -81,7 +83,7 @@ public class PersonInteractionScript : MonoBehaviour
 
             case ProcessState.AskingQuestion:
                 commands = new Command[] { Command.FinishedSpeaking };
-                return new string[] { "Question 1", "Question 2", "Cancel" };
+                return new string[] { "Ask age", "Ask how to build a ladder", "Ask name", "Ask where to buy weapons", "Cancel" };
             case ProcessState.TellingJoke:
                 commands = new Command[] { Command.FinishedSpeaking };
                 return new string[] { "Scottish Joke", "Disney Joke", "Music Joke", "Cancel" };

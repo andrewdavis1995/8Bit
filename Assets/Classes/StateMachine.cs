@@ -125,7 +125,7 @@ public class StateMachine
         commandStr = commandStr.ToLower();
         if(commandStr == "Goodbye")
         {
-
+            return Command.Exit;
         }
 
 

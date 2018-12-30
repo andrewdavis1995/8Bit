@@ -278,8 +278,8 @@ public class UIScript : MonoBehaviour
 
     private void ShowTalking()
     {
-        _conversationIndex = 0;
         ConversationText.text = GetSpeechOutput();
+        _conversationIndex = 0;
         RepositionWindows(true);
         PlayerConversation.gameObject.SetActive(false);
         ConversationWindow.gameObject.SetActive(true);
@@ -291,11 +291,11 @@ public class UIScript : MonoBehaviour
         {
             case ProcessState.BrowsingQuestions:
                 // who started that fire?
-                return "Who's got the look?";
+                return ConversationFetcher.GetQuestion(currentOptions[_conversationIndex].Trim());
             case ProcessState.SelectingCompliment:
-                return ConversationFetcher.GetCompliment(currentOptions[_conversationIndex].Replace("Joke", "").Trim());
+                return ConversationFetcher.GetCompliment(currentOptions[_conversationIndex].Replace("Compliment", "").Trim());
             case ProcessState.SelectingJoke:
-                return ConversationFetcher.GetJoke(currentOptions[_conversationIndex].Replace("Compliment", "").Trim());
+                return ConversationFetcher.GetJoke(currentOptions[_conversationIndex].Replace("Joke", "").Trim());
         }
 
         return "Erm... Words...?";

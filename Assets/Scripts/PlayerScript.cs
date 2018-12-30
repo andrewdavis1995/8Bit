@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Assets.Scripts;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -11,6 +12,7 @@ public class PlayerScript : MonoBehaviour
     Quaternion _rotation;
     public AudioSource Sounds;
     public ClimbingScript ClimbingScript;
+    bool _isRunning = false;
 
     private List<CollectableObject> _collectedObjects = new List<CollectableObject>();
     private List<GameObject> _itemsInBounds = new List<GameObject>();
@@ -43,13 +45,30 @@ public class PlayerScript : MonoBehaviour
             {
                 PickUp();
             }
-            if (Input.GetKeyDown(KeyCode.T) && _onGround)
+            if (Input.GetKeyDown(KeyCode.T) && !_isRunning && _onGround)
             {
                 Talk();
+            }
+            if (Input.GetKeyDown(KeyCode.L) && !_isRunning && _onGround)
+            {
+                Punch();
             }
 
             CheckMovement();
             transform.rotation = _rotation;
+        }
+    }
+
+    private void Punch()
+    {
+        foreach(var item in _itemsInBounds)
+        {
+            var punchable = item.GetComponentInChildren<PunchableObject>();
+            if(punchable != null)
+            {
+                punchable.Punched();
+                break;
+            }
         }
     }
 
@@ -176,6 +195,7 @@ public class PlayerScript : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.RightArrow))
             {
+                _isRunning = true;
                 if (_onGround)
                     _animator.SetTrigger("Run");
                 _renderer.flipX = false;
@@ -183,6 +203,7 @@ public class PlayerScript : MonoBehaviour
             }
             else if (Input.GetKey(KeyCode.LeftArrow))
             {
+                _isRunning = true;
                 if (_onGround)
                     _animator.SetTrigger("Run");
                 _renderer.flipX = true;
@@ -190,6 +211,7 @@ public class PlayerScript : MonoBehaviour
             }
             else
             {
+                _isRunning = false;
                 if (_onGround)
                     _animator.SetTrigger("Stop");
             }
