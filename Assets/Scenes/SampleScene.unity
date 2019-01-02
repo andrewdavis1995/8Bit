@@ -9748,7 +9748,7 @@ MonoBehaviour:
     CharacterType: 0
     RomanticallyAvailable: 0
     Health: 100
-  Knowledge: 
+  Knowledge: 04000000
   KnowledgeRefuse: 000000000300000002000000
 --- !u!61 &487576189
 BoxCollider2D:
@@ -26763,7 +26763,7 @@ MonoBehaviour:
     CharacterType: 1
     RomanticallyAvailable: 0
     Health: 100
-  Knowledge: 00000000
+  Knowledge: 0000000004000000
   KnowledgeRefuse: 03000000
 --- !u!61 &1251068344
 BoxCollider2D:
@@ -36813,7 +36813,7 @@ MonoBehaviour:
     CharacterType: 0
     RomanticallyAvailable: 1
     Health: 100
-  Knowledge: 020000000300000000000000
+  Knowledge: 0200000003000000000000000400000005000000
   KnowledgeRefuse: 
 --- !u!61 &1762956100
 BoxCollider2D:

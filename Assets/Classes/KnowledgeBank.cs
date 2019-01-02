@@ -15,6 +15,10 @@ namespace Assets.Classes
         WhereToBuyWeapons,
         HowToMakeALadder,
         WhatIsYourName,
-        HowOldAreYou
+        HowOldAreYou,
+
+        IsThisADemoLevel,
+
+        WhenWasThisPlaceBuilt,
     }
 }

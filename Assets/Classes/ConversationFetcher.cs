@@ -36,21 +36,26 @@ namespace Assets.Classes
             return randomCompliment[1];
         }
 
-        public static string GetQuestion(string category)
+        public static string GetQuestion(string category, ref KnowledgeCategory knowledgeCategory)
         {
-            List<string[]> questions = new List<string[]>
+            List<object[]> questions = new List<object[]>
             {
-                new string[]{ "Ask how to build a ladder", "How do you build a ladder?" },
-                new string[]{ "Ask age", "How old are you?" },
-                new string[]{ "Ask name", "What is your name?" },
-                new string[]{ "Ask where to buy weapons", "Where can I buy weapons?" },
+                new object[]{ "Ask how to build a ladder", "How do you build a ladder?", KnowledgeCategory.HowToMakeALadder },
+                new object[]{ "Ask age", "How old are you?", KnowledgeCategory.HowOldAreYou },
+                new object[]{ "Ask name", "What is your name?", KnowledgeCategory.WhatIsYourName },
+                new object[]{ "Ask where to buy weapons", "Where can I buy weapons?", KnowledgeCategory.WhereToBuyWeapons },
+
+                new object[]{ "Ask if this is a demo level", "Is this a demo level?", KnowledgeCategory.IsThisADemoLevel },
+
+                new object[]{ "Ask when this place was built", "When was this place built?", KnowledgeCategory.WhenWasThisPlaceBuilt},
             };
 
-            var relevant = questions.Where(q => q[0] == category).ToList();
+            var relevant = questions.Where(q => (string)q[0] == category).ToList();
 
             var random = UnityEngine.Random.Range(0, relevant.Count());
             var randomQuestion = relevant[random];
-            return randomQuestion[1];
+            knowledgeCategory = (KnowledgeCategory)randomQuestion[2];
+            return (string)randomQuestion[1];
         }
     }
 }

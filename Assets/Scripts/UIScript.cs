@@ -52,7 +52,7 @@ public class UIScript : MonoBehaviour
         {
             RemoveMenuOptions();
             PersonActive.Status.MoveNext(currentCommands[_conversationIndex]);
-            currentOptions = PersonActive.GetOptions(ref currentCommands);
+            PersonActive.GetOptions(ref currentCommands, ref currentOptions);
 
             if (PersonActive.Status.CurrentState == ProcessState.Ended)
             {
@@ -153,7 +153,7 @@ public class UIScript : MonoBehaviour
     {
         PersonActive = personInteractionScript;
         PersonActive.Status.MoveNext(Command.Blocked);
-        currentOptions = PersonActive.GetOptions(ref currentCommands);
+        PersonActive.GetOptions(ref currentCommands, ref currentOptions);
         currentCommands = new Command[] { Command.Exit };
         RepositionWindows(false);
         ShowResponse();
@@ -176,7 +176,7 @@ public class UIScript : MonoBehaviour
         PersonActive = personInteractionScript;
         PersonActive.Status.CurrentState = ProcessState.Inactive;
         PersonActive.Status.MoveNext(Command.StartConversation);
-        currentOptions = PersonActive.GetOptions(ref currentCommands);
+        PersonActive.GetOptions(ref currentCommands, ref currentOptions);
         ShowMenu();
     }
 
@@ -254,8 +254,8 @@ public class UIScript : MonoBehaviour
 
     private void ShowResponse()
     {
-        _conversationIndex = 0;
         ConversationText.text = GetResponse();
+        _conversationIndex = 0;
         RepositionWindows(false);
         PlayerConversation.gameObject.SetActive(false);
         ConversationWindow.gameObject.SetActive(true);
@@ -266,14 +266,31 @@ public class UIScript : MonoBehaviour
         switch (PersonActive.Status.PreviousState)
         {
             case ProcessState.AskingQuestion:
-                return "I dunno the answer to that question";
+                return GetQuestionAnswer();
             case ProcessState.TellingCompliment:
-                return "That's so nice";
+                return GetComplimentResponse();
             case ProcessState.TellingJoke:
-                return "Hahahahaha hilarious!";
+                return GetJokeResponse();
         }
 
         return "I don't know what to say";
+    }
+
+    private string GetComplimentResponse()
+    {
+        // TODO: factor in feelings/personality
+        return "That's so nice!";
+    }
+
+    private string GetJokeResponse()
+    {
+        return "Hahahaha that's hilarious!";
+    }
+
+    private string GetQuestionAnswer()
+    {
+        var response = PersonActive.CheckQuestionAnswer();
+        return response;
     }
 
     private void ShowTalking()
@@ -291,7 +308,12 @@ public class UIScript : MonoBehaviour
         {
             case ProcessState.BrowsingQuestions:
                 // who started that fire?
-                return ConversationFetcher.GetQuestion(currentOptions[_conversationIndex].Trim());
+                {
+                    var knowledgeCat = KnowledgeCategory.HowOldAreYou;
+                    var output = ConversationFetcher.GetQuestion(currentOptions[_conversationIndex].Trim(), ref knowledgeCat);
+                    PersonActive.SetQuestionType(knowledgeCat);
+                    return output;
+                }
             case ProcessState.SelectingCompliment:
                 return ConversationFetcher.GetCompliment(currentOptions[_conversationIndex].Replace("Compliment", "").Trim());
             case ProcessState.SelectingJoke:
