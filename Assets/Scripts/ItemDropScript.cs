@@ -25,7 +25,7 @@ public class ItemDropScript : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.tag == "Ground")
+        if (collision.gameObject.tag.Contains("Ground"))
         {
             _boxCollider.isTrigger = true;
             Destroy(GetComponent<Rigidbody2D>());

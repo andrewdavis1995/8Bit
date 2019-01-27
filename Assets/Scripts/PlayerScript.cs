@@ -141,7 +141,7 @@ public class PlayerScript : MonoBehaviour
             Physics2D.IgnoreCollision(collision.collider, GetComponent<Collider2D>());
         }
 
-        if ((collision.transform.tag == "Ground" || collision.transform.tag == "Platform")&& collision.relativeVelocity.y > -1.5f)
+        if ((collision.transform.tag.Contains("Ground") || collision.transform.tag == "Platform")&& collision.relativeVelocity.y > -1.5f)
         {
             _onGround = true;
             if (collision.transform.tag == "Platform")

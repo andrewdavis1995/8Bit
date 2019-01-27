@@ -66,6 +66,7 @@
     <Compile Include="Assets\Classes\Person.cs" />
     <Compile Include="Assets\Classes\PersonEditor.cs" />
     <Compile Include="Assets\Classes\StateMachine.cs" />
+    <Compile Include="Assets\Scripts\AtmosphereController.cs" />
     <Compile Include="Assets\Scripts\CameraScript.cs" />
     <Compile Include="Assets\Scripts\ClimbableObject.cs" />
     <Compile Include="Assets\Scripts\ClimbingScript.cs" />

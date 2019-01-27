@@ -162,7 +162,7 @@ public class PersonInteractionScript : MonoBehaviour
 
                 // trials
             case KnowledgeCategory.IsThisADemoLevel:
-                return LocationSpecificData._currentLocation == Location.Trials ? "It is indeed!" : "Absolutely not";
+                return LocationSpecificData.CurrentLocation == Location.Trials ? "It is indeed!" : "Absolutely not";
 
                 // Caredall
             case KnowledgeCategory.WhenWasThisPlaceBuilt:
