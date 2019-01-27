@@ -154,7 +154,7 @@ public class PersonInteractionScript : MonoBehaviour
             case KnowledgeCategory.HowOldAreYou:
                 return person.Age.ToString();
             case KnowledgeCategory.HowToMakeALadder:
-                return "You'll need to combine 2 bits of wood, and a piece if string";
+                return "You'll need to combine 2 bits of wood, and a piece of string";
             case KnowledgeCategory.WhatIsYourName:
                 return person.Name;
             case KnowledgeCategory.WhereToBuyWeapons:

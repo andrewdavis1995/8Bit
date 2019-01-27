@@ -355,8 +355,10 @@ public class UIScript : MonoBehaviour
     {
         switch (obj)
         {
+            case ObjectType.Wood: return Collectables[0];
             case ObjectType.Battery: return Collectables[1];
             case ObjectType.Stone: return Collectables[2];
+            case ObjectType.Tank: return Collectables[3];
         }
         return Collectables[0];
     }

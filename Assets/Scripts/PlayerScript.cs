@@ -1,8 +1,10 @@
 ﻿using Assets.Scripts;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerScript : MonoBehaviour
 {
@@ -20,6 +22,8 @@ public class PlayerScript : MonoBehaviour
     bool _onGround = false;
     bool _inventoryOpen = false;
 
+    bool _walkOff = false;
+
     // Use this for initialization
     void Start()
     {
@@ -32,16 +36,16 @@ public class PlayerScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (PersonInteractionScript.ConversationActive) return;
+        if (PersonInteractionScript.ConversationActive && _walkOff) return;
 
-        if (Input.GetKeyDown(KeyCode.I) && _onGround)
+        if (Input.GetButtonDown("Inventory")||(Input.GetKeyDown(KeyCode.I)) && _onGround)
         {
             _inventoryOpen = UIScript.Instance().ToggleInventory(transform);
         }
 
         if (!_inventoryOpen)
         {
-            if (Input.GetKeyDown(KeyCode.P))
+            if (Input.GetButtonDown("Pickup"))
             {
                 PickUp();
             }
@@ -145,7 +149,7 @@ public class PlayerScript : MonoBehaviour
                 transform.parent = collision.transform;
             }
 
-            if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.LeftArrow))
+            if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.LeftArrow) || JoystickMovementLeft() || JoystickMovementRight())
             {
                 _animator.SetTrigger("Run");
             }
@@ -177,6 +181,10 @@ public class PlayerScript : MonoBehaviour
         {
             ClimbingScript.ClimbZoneEntered(collision);
         }
+        else if (collision.tag == "Door")
+        {
+            collision.gameObject.GetComponent<DoorScript>().StartOpen(this);
+        }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
@@ -187,27 +195,54 @@ public class PlayerScript : MonoBehaviour
             _rigidBody.isKinematic = false;
             ClimbingScript.StopClimbing();
         }
+        else if (collision.tag == "Door")
+        {
+            collision.gameObject.GetComponent<DoorScript>().StartClose();
+        }
     }
+
+    bool JoystickMovementLeft()
+    {
+        return Input.GetAxis("Horizontal") < 0f;
+    }
+
+    bool JoystickMovementRight()
+    {
+        return Input.GetAxis("Horizontal") > 0f;
+    }
+    bool JoystickMovementUp()
+    {
+        return Input.GetAxis("Vertical") < 0f;
+    }
+
 
     private void CheckMovement()
     {
         if (!ClimbingScript.IsClimbing())
         {
-            if (Input.GetKey(KeyCode.RightArrow))
+            float speed = 4;
+            if (JoystickMovementLeft() || JoystickMovementRight()) speed *= Input.GetAxis("Horizontal");
+            if (Input.GetKey(KeyCode.RightArrow) || JoystickMovementRight())
             {
                 _isRunning = true;
-                if (_onGround)
+                if (_onGround && _animator.GetBool("Run") == false)
+                {
                     _animator.SetTrigger("Run");
+                }
                 _renderer.flipX = false;
-                transform.Translate(new Vector3(4 * Time.deltaTime, 0, 0));
+
+                transform.Translate(new Vector3(speed * Time.deltaTime, 0, 0));
             }
-            else if (Input.GetKey(KeyCode.LeftArrow))
+            else if (Input.GetKey(KeyCode.LeftArrow) || JoystickMovementLeft())
             {
+                if (speed > 0) speed *= -1;
                 _isRunning = true;
-                if (_onGround)
+                if (_onGround && _animator.GetBool("Run") == false)
+                {
                     _animator.SetTrigger("Run");
+                }
                 _renderer.flipX = true;
-                transform.Translate(new Vector3(-4 * Time.deltaTime, 0, 0));
+                transform.Translate(new Vector3(speed * Time.deltaTime, 0, 0));
             }
             else
             {
@@ -219,7 +254,7 @@ public class PlayerScript : MonoBehaviour
 
         if(ClimbingScript.IsClimbing())
         {
-            if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.Space))
+            if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.Space) || JoystickMovementLeft() || JoystickMovementRight())
             {
                 _animator.ResetTrigger("Climb");
                 _animator.ResetTrigger("Stop");
@@ -231,7 +266,7 @@ public class PlayerScript : MonoBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) && _onGround)
+        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetButtonDown("Jump")) && _onGround)
         {
             _animator.ResetTrigger("Climb");
             _animator.ResetTrigger("Stop");
@@ -245,4 +280,20 @@ public class PlayerScript : MonoBehaviour
 
     public bool Grounded() { return _onGround; }
 
+    public void WalkThroughDoor(float xPosition, int scene)
+    {
+        _walkOff = true;
+        transform.position = new Vector3(xPosition, transform.position.y, transform.position.z);
+        StartCoroutine(Disappear(scene));
+    }
+
+    private IEnumerator Disappear(int scene)
+    {
+        while(_renderer.color.a > 0)
+        {
+            _renderer.color = new Color(1, 1, 1, _renderer.color.a - 0.02f);
+            yield return new WaitForSeconds(0.01f);
+        }
+        SceneManager.LoadScene(scene);
+    }
 }

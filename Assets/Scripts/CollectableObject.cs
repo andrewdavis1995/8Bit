@@ -23,5 +23,6 @@ public enum ObjectType
 {
     Battery,
     Stone,
-    Wood
+    Wood,
+    Tank
 }
