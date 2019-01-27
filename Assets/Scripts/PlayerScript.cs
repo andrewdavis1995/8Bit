@@ -103,6 +103,21 @@ public class PlayerScript : MonoBehaviour
         }
     }
 
+    internal void DropItem(CollectableObject obj)
+    {
+        for(uint i = 0; i < _collectedObjects.Count; i++)
+        {
+            if(_collectedObjects[(int)i] == obj)
+            {
+                // instantiate
+                var creator = GameObject.Find("CollectableCreator").GetComponent<CollectableCreationScript>();
+                creator.Create(_collectedObjects.ElementAt((int)i).ObjectType, transform.position, 4);
+                _collectedObjects.RemoveAt((int)i);
+                break;
+            }
+        }
+    }
+
     private void PickUp()
     {
         // collect items
@@ -158,12 +173,17 @@ public class PlayerScript : MonoBehaviour
                 _animator.SetTrigger("Stop");
             }
         }
+
+        if (collision.gameObject.tag == "TransportWall")
+        {
+            collision.gameObject.GetComponent<TransportController>().Collided();
+        }
     }
 
     internal List<IGrouping<ObjectType, CollectableObject>> GetCollectedItemsGrouped()
     {
         var grouped = _collectedObjects.GroupBy(i => i.ObjectType);
-        return grouped.ToList();
+        return grouped.OrderBy(i => i.ToList().First().ObjectType).ToList();
     }
 
     private void OnCollisionExit2D(Collision2D collision)

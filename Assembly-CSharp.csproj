@@ -70,6 +70,7 @@
     <Compile Include="Assets\Scripts\CameraScript.cs" />
     <Compile Include="Assets\Scripts\ClimbableObject.cs" />
     <Compile Include="Assets\Scripts\ClimbingScript.cs" />
+    <Compile Include="Assets\Scripts\CollectableCreationScript.cs" />
     <Compile Include="Assets\Scripts\CollectableObject.cs" />
     <Compile Include="Assets\Scripts\DoorScript.cs" />
     <Compile Include="Assets\Scripts\FollowScript.cs" />
@@ -80,6 +81,7 @@
     <Compile Include="Assets\Scripts\PlatformScript.cs" />
     <Compile Include="Assets\Scripts\PlayerScript.cs" />
     <Compile Include="Assets\Scripts\PunchableObject.cs" />
+    <Compile Include="Assets\Scripts\TransportController.cs" />
     <Compile Include="Assets\Scripts\UIScript.cs" />
     <Compile Include="Assets\Scripts\WanderScript.cs" />
     <Reference Include="UnityEditor.StandardEvents">

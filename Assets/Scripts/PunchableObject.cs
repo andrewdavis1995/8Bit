@@ -15,8 +15,8 @@ namespace Assets.Scripts
             {
                 if (PrefabToCreate)
                 {
-                    var obj = Instantiate(PrefabToCreate, transform.position, Quaternion.identity);
-                    obj.GetComponent<Rigidbody2D>().AddForce(new Vector2(Random.Range(-15f, 15f), 200));
+                    var creator = GameObject.Find("CollectableCreator").GetComponent<CollectableCreationScript>();
+                    creator.Create(PrefabToCreate, transform.position);
                 }
                 // give out any collectables
                 Destroy(gameObject);

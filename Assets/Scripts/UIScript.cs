@@ -87,6 +87,10 @@ public class UIScript : MonoBehaviour
         {
 
         }
+        else if (Input.GetKeyDown(KeyCode.P))
+        {
+            DropItem();
+        }
         else if (Input.GetKeyDown(KeyCode.UpArrow))
         {
             InventoryIndexChanged(-3);
@@ -103,6 +107,20 @@ public class UIScript : MonoBehaviour
         {
             InventoryIndexChanged(-1);
         }
+    }
+
+    private void DropItem()
+    {
+        try
+        {
+            var items = Player.GetCollectedItemsGrouped()[_inventoryIndex];
+            Player.DropItem(items.ToList().First());
+
+            // refresh images
+            ToggleInventory(Player.transform);
+            ToggleInventory(Player.transform);
+        }
+        catch (Exception ex) { }
     }
 
     public void InventoryIndexChanged(int changed)
@@ -198,6 +216,7 @@ public class UIScript : MonoBehaviour
         for (int i = grouped.Count; i < InventoryPopup.GetChild(0).childCount; i++)
         {
             var display = InventoryPopup.GetChild(0).GetChild(i);
+            display.GetComponentInChildren<Text>().text = "0";
             display.GetComponentInChildren<Image>().color = new Color(0.2f, 0.2f, 0.2f);
             display.GetComponentsInChildren<Image>()[1].color = new Color(0, 0, 0, 0);
         }
