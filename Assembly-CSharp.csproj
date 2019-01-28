@@ -76,6 +76,7 @@
     <Compile Include="Assets\Scripts\FollowScript.cs" />
     <Compile Include="Assets\Scripts\ItemDropScript.cs" />
     <Compile Include="Assets\Scripts\MusicScript.cs" />
+    <Compile Include="Assets\Scripts\ObstacleScript.cs" />
     <Compile Include="Assets\Scripts\PatrolScript.cs" />
     <Compile Include="Assets\Scripts\PersonInteractionScript.cs" />
     <Compile Include="Assets\Scripts\PlatformScript.cs" />

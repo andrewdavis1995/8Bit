@@ -10,19 +10,24 @@ public class PlayerScript : MonoBehaviour
 {
     Animator _animator;
     SpriteRenderer _renderer;
+    Collider2D _boxCollider;
     Rigidbody2D _rigidBody;
     Quaternion _rotation;
     public AudioSource Sounds;
     public ClimbingScript ClimbingScript;
-    bool _isRunning = false;
 
     private List<CollectableObject> _collectedObjects = new List<CollectableObject>();
     private List<GameObject> _itemsInBounds = new List<GameObject>();
+    Collider2D _activeObstacle;
 
     bool _onGround = false;
     bool _inventoryOpen = false;
-
     bool _walkOff = false;
+    bool _isRunning = false;
+    bool _bounceBack = false;
+    bool _bounceBackBlock = false;
+
+    public float Health = 100;
 
     // Use this for initialization
     void Start()
@@ -30,13 +35,14 @@ public class PlayerScript : MonoBehaviour
         _animator = GetComponentInChildren<Animator>();
         _renderer = GetComponentInChildren<SpriteRenderer>();
         _rigidBody = GetComponentInChildren<Rigidbody2D>();
+        _boxCollider = GetComponentInChildren<BoxCollider2D>();
         _rotation = transform.rotation;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (PersonInteractionScript.ConversationActive && _walkOff) return;
+        if (PersonInteractionScript.ConversationActive || _walkOff || _bounceBack) return;
 
         if (Input.GetButtonDown("Inventory")||(Input.GetKeyDown(KeyCode.I)) && _onGround)
         {
@@ -158,6 +164,14 @@ public class PlayerScript : MonoBehaviour
 
         if ((collision.transform.tag.Contains("Ground") || collision.transform.tag == "Platform")&& collision.relativeVelocity.y > -1.5f)
         {
+            if (_bounceBack && !_bounceBackBlock && collision.transform.tag.Contains("Ground"))
+            {
+                Debug.Log("All Better thanks to " + collision.gameObject.name);
+                _bounceBack = false;
+                _renderer.color = new Color(1, 1, 1);
+                Physics2D.IgnoreCollision(_activeObstacle, _boxCollider, false);
+            }
+
             _onGround = true;
             if (collision.transform.tag == "Platform")
             {
@@ -204,6 +218,11 @@ public class PlayerScript : MonoBehaviour
         else if (collision.tag == "Door")
         {
             collision.gameObject.GetComponent<DoorScript>().StartOpen(this);
+        }
+        else if (collision.tag == "Obstacle")
+        {
+            _activeObstacle = collision.GetComponent<Collider2D>();
+            Stun(collision.gameObject.GetComponent<ObstacleScript>(), _renderer.flipX ? 1 : -1);
         }
     }
 
@@ -315,5 +334,42 @@ public class PlayerScript : MonoBehaviour
             yield return new WaitForSeconds(0.01f);
         }
         SceneManager.LoadScene(scene);
+    }
+
+    void Stun(ObstacleScript obstacle, int multiplier)
+    {
+        Debug.Log("Ouch");
+        Health -= obstacle.Damage;
+        if (Health > 0)
+        {
+            StartCoroutine(WaitAfterBounceback());
+            StartCoroutine(ResetAfterBounceback());
+            Physics2D.IgnoreCollision(_activeObstacle, _boxCollider);
+            _bounceBack = true;
+            _rigidBody.AddForce(new Vector2(multiplier * 3500, 8000));
+            _renderer.color = new Color(0.8f, 0.2f, 0.2f);
+        }
+        else
+        {
+            //Die();
+        }
+    }
+
+    private IEnumerator WaitAfterBounceback()
+    {
+        // need to wait to avoid hitting floor straight away
+        _bounceBackBlock = true;
+        yield return new WaitForSeconds(0.1f);
+        _bounceBackBlock = false;
+    }
+
+    private IEnumerator ResetAfterBounceback()
+    {
+        // need to wait to avoid hitting floor straight away
+        yield return new WaitForSeconds(2f);
+        _bounceBackBlock = false;
+        _bounceBack = false;
+        _renderer.color = new Color(1, 1, 1);
+        Physics2D.IgnoreCollision(_activeObstacle, _boxCollider, false);
     }
 }
