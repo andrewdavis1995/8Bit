@@ -27,11 +27,11 @@ public class ClimbingScript : MonoBehaviour
 
     private void CheckClimb()
     {
-        if (_climbingObject != null)
+        if (_climbingObject != null && PlayerScript.IsAlive())
         {
             if (Input.GetKey(KeyCode.UpArrow) && transform.position.y < _climbingObject.TopPosition)
             {
-                PlayerScript.StopMomentum();
+                PlayerScript.StopMomentum(true);
                 _climbing = true;
                 PlayerScript.Climb(); 
                 transform.Translate(new Vector3(0, 2 * Time.deltaTime, 0));
@@ -39,11 +39,14 @@ public class ClimbingScript : MonoBehaviour
             }
             if (Input.GetKey(KeyCode.DownArrow))
             {
-                PlayerScript.StopMomentum();
-                _climbing = true;
-                PlayerScript.Climb();
-                transform.Translate(new Vector3(0, -2 * Time.deltaTime, 0));
-                transform.position = new Vector3(_climbingObject.CentralXposition, transform.position.y, transform.position.z);
+                if (transform.position.y > _climbingObject.BottomYPosition)
+                {
+                    PlayerScript.StopMomentum(true);
+                    _climbing = true;
+                    PlayerScript.Climb();
+                    transform.Translate(new Vector3(0, -2 * Time.deltaTime, 0));
+                    transform.position = new Vector3(_climbingObject.CentralXposition, transform.position.y, transform.position.z);
+                }
             }
         }
     }

@@ -16,11 +16,17 @@ public class PlayerScript : MonoBehaviour
     public AudioSource Sounds;
     public ClimbingScript ClimbingScript;
 
-    private List<CollectableObject> _collectedObjects = new List<CollectableObject>();
+    private List<ObjectType> _collectedObjects = new List<ObjectType>();
     private List<GameObject> _itemsInBounds = new List<GameObject>();
     Collider2D _activeObstacle;
 
+    internal bool IsAlive()
+    {
+        return _alive;
+    }
+
     bool _onGround = false;
+    bool _alive = true;
     bool _inventoryOpen = false;
     bool _walkOff = false;
     bool _isRunning = false;
@@ -42,7 +48,7 @@ public class PlayerScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (PersonInteractionScript.ConversationActive || _walkOff || _bounceBack) return;
+        if (PersonInteractionScript.ConversationActive || _walkOff || _bounceBack || !_alive) return;
 
         if (Input.GetButtonDown("Inventory")||(Input.GetKeyDown(KeyCode.I)) && _onGround)
         {
@@ -109,19 +115,27 @@ public class PlayerScript : MonoBehaviour
         }
     }
 
-    internal void DropItem(CollectableObject obj)
+    internal void DropItem(ObjectType obj, bool crafting)
     {
         for(uint i = 0; i < _collectedObjects.Count; i++)
         {
             if(_collectedObjects[(int)i] == obj)
             {
                 // instantiate
-                var creator = GameObject.Find("CollectableCreator").GetComponent<CollectableCreationScript>();
-                creator.Create(_collectedObjects.ElementAt((int)i).ObjectType, transform.position, 4);
+                if (!crafting)
+                {
+                    var creator = GameObject.Find("CollectableCreator").GetComponent<CollectableCreationScript>();
+                    creator.Create(_collectedObjects.ElementAt((int)i), transform.position, 4);
+                }
                 _collectedObjects.RemoveAt((int)i);
                 break;
             }
         }
+    }
+
+    internal void ItemCollected(ObjectType item)
+    {
+        _collectedObjects.Add(item);
     }
 
     private void PickUp()
@@ -132,7 +146,7 @@ public class PlayerScript : MonoBehaviour
             var renderer = _itemsInBounds[i].GetComponent<SpriteRenderer>();
             if (_itemsInBounds[i].tag == "Collectable" && renderer.enabled)
             {
-                _collectedObjects.Add(_itemsInBounds[i].GetComponent<CollectableObject>());
+                _collectedObjects.Add(_itemsInBounds[i].GetComponent<CollectableObject>().ObjectType);
                  renderer.enabled = false;
                 _itemsInBounds.RemoveAt(i);
             }
@@ -147,11 +161,14 @@ public class PlayerScript : MonoBehaviour
         _rigidBody.isKinematic = true;
     }
 
-    internal void StopMomentum()
+    internal void StopMomentum(bool triggers)
     {
-        _animator.ResetTrigger("Jump");
-        _animator.ResetTrigger("Run");
-        _animator.SetTrigger("Climb");
+        if (triggers)
+        {
+            _animator.ResetTrigger("Jump");
+            _animator.ResetTrigger("Run");
+            _animator.SetTrigger("Climb");
+        }
         _rigidBody.velocity = Vector3.zero;
     }
 
@@ -194,10 +211,10 @@ public class PlayerScript : MonoBehaviour
         }
     }
 
-    internal List<IGrouping<ObjectType, CollectableObject>> GetCollectedItemsGrouped()
+    internal List<IGrouping<ObjectType, ObjectType>> GetCollectedItemsGrouped()
     {
-        var grouped = _collectedObjects.GroupBy(i => i.ObjectType);
-        return grouped.OrderBy(i => i.ToList().First().ObjectType).ToList();
+        var grouped = _collectedObjects.GroupBy(i => i);
+        return grouped.OrderBy(i => i.ToList().First()).ToList();
     }
 
     private void OnCollisionExit2D(Collision2D collision)
@@ -333,15 +350,18 @@ public class PlayerScript : MonoBehaviour
             _renderer.color = new Color(1, 1, 1, _renderer.color.a - 0.02f);
             yield return new WaitForSeconds(0.01f);
         }
+
+        Destroy(MusicScript.Instance);
+        MusicScript.Playing = false;
         SceneManager.LoadScene(scene);
     }
 
     void Stun(ObstacleScript obstacle, int multiplier)
     {
-        Debug.Log("Ouch");
         Health -= obstacle.Damage;
         if (Health > 0)
         {
+            StopMomentum(false);
             StartCoroutine(WaitAfterBounceback());
             StartCoroutine(ResetAfterBounceback());
             Physics2D.IgnoreCollision(_activeObstacle, _boxCollider);
@@ -351,8 +371,16 @@ public class PlayerScript : MonoBehaviour
         }
         else
         {
-            //Die();
+            Die();
         }
+    }
+
+    private void Die()
+    {
+        _animator.SetTrigger("Dead");
+        _alive = false;
+        _rigidBody.AddForce(new Vector2(0, 8000));
+        UIScript.Instance().DeadScreen.SetActive(true);
     }
 
     private IEnumerator WaitAfterBounceback()

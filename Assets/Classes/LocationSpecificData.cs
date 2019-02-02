@@ -5,6 +5,7 @@ namespace Assets.Classes
     public static class LocationSpecificData
     {
         public static Location CurrentLocation = Location.Trials;
+        public static int SceneIndex = 0;
 
         public static List<string> GetLocationSpecificQuestions()
         {

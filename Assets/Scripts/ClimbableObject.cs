@@ -6,4 +6,5 @@ public class ClimbableObject : MonoBehaviour
 {
     public float TopPosition;
     public float CentralXposition;
+    public float BottomYPosition;
 }

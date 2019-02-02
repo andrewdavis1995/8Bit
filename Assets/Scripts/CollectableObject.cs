@@ -24,5 +24,9 @@ public enum ObjectType
     Battery,
     Stone,
     Wood,
-    Tank
+    Tank,
+    Ladder,
+    Hammer,
+
+    None,
 }

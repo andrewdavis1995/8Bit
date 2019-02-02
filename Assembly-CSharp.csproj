@@ -60,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Classes\ConversationFetcher.cs" />
+    <Compile Include="Assets\Classes\Crafting.cs" />
     <Compile Include="Assets\Classes\JokeManagement.cs" />
     <Compile Include="Assets\Classes\KnowledgeBank.cs" />
     <Compile Include="Assets\Classes\LocationSpecificData.cs" />

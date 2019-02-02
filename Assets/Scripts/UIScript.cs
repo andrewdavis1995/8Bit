@@ -2,10 +2,13 @@
 using System;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UIScript : MonoBehaviour
 {
+    public GameObject DeadScreen;
+
     public GameObject PlayerConversation;
     public PersonInteractionScript PersonActive;
 
@@ -18,6 +21,7 @@ public class UIScript : MonoBehaviour
     public Transform ConversationWindow;
     public Text ConversationText;
     public Transform InventoryPopup;
+    public Transform CraftingPopup;
 
     private static UIScript _instance;
     
@@ -32,10 +36,12 @@ public class UIScript : MonoBehaviour
 
     public static UIScript Instance() { return _instance; }
 
-    public UIScript() { _instance = this; }
+    public UIScript() { _instance = this; } 
 
     private void Update()
     {
+        if (!Player.IsAlive()) return;
+
         if (PersonInteractionScript.ConversationActive)
         {
             HandleConversationInput();
@@ -89,7 +95,7 @@ public class UIScript : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.P))
         {
-            DropItem();
+            DropItem(false);
         }
         else if (Input.GetKeyDown(KeyCode.UpArrow))
         {
@@ -107,20 +113,75 @@ public class UIScript : MonoBehaviour
         {
             InventoryIndexChanged(-1);
         }
+        else if (Input.GetKeyDown(KeyCode.C))
+        {
+            CraftItemSelected();
+        }
+        else if (Input.GetKeyDown(KeyCode.X) && CraftingPopup.gameObject.activeInHierarchy)
+        {
+            Craft();
+        }
     }
 
-    private void DropItem()
+    private void CraftItemSelected()
     {
         try
         {
             var items = Player.GetCollectedItemsGrouped()[_inventoryIndex];
-            Player.DropItem(items.ToList().First());
+            var item = items.ToList().First();
+            var possible = Crafting.ItemSelected(item, CraftingPopup);
+            if (possible)
+            {
+                DropItem(true);
+                CraftingPopup.gameObject.SetActive(true);
+            }
+        }
+        catch (Exception) { }
+    }
+
+    private void Craft()
+    {
+        bool crafted = false;
+        var createdItems = Crafting.Craft(ref crafted);
+        // add all items to list, and update inventory
+
+        foreach(var item in createdItems)
+        {
+            for(int i = 0; i < item.Value; i++)
+            {
+                Player.ItemCollected(item.Key);
+            }
+        }
+
+        for (int i = 0; i < 3 && i < CraftingPopup.GetChild(0).childCount; i++)
+        {
+            var display = CraftingPopup.GetChild(0).GetChild(i);
+            display.GetComponentInChildren<Text>().text = "0";
+            display.GetComponentInChildren<Image>().color = new Color(0.2f, 0.2f, 0.2f);
+            display.GetComponentsInChildren<Image>()[1].color = new Color(0, 0, 0, 0);
+        }
+
+        CraftingPopup.gameObject.SetActive(false);
+
+        ToggleInventory(Player.transform);
+        ToggleInventory(Player.transform);
+    }
+
+    private void DropItem(bool crafting)
+    {
+        try
+        {
+            var items = Player.GetCollectedItemsGrouped()[_inventoryIndex];
+            Player.DropItem(items.ToList().First(), crafting);
 
             // refresh images
             ToggleInventory(Player.transform);
             ToggleInventory(Player.transform);
         }
-        catch (Exception ex) { }
+        catch (Exception ex)
+        {
+            var msg = ex.Message;
+        }
     }
 
     public void InventoryIndexChanged(int changed)
@@ -154,7 +215,7 @@ public class UIScript : MonoBehaviour
         if (_inventoryIndex < Player.GetCollectedItemsGrouped().Count)
         {
             var items = Player.GetCollectedItemsGrouped()[_inventoryIndex];
-            strOutput = items.First().ItemName;
+            strOutput = items.First().ToString();
         }
         txtDescription.text = strOutput;
     }
@@ -370,7 +431,7 @@ public class UIScript : MonoBehaviour
             PlayerConversation.transform.position = screenPos;
     }
 
-    Sprite GetCollectableImage(ObjectType obj)
+    public Sprite GetCollectableImage(ObjectType obj)
     {
         switch (obj)
         {
@@ -378,8 +439,14 @@ public class UIScript : MonoBehaviour
             case ObjectType.Battery: return Collectables[1];
             case ObjectType.Stone: return Collectables[2];
             case ObjectType.Tank: return Collectables[3];
+            case ObjectType.Ladder: return Collectables[4];
         }
         return Collectables[0];
+    }
+
+    public void RestartLevel()
+    {
+        SceneManager.LoadScene(LocationSpecificData.SceneIndex);
     }
 
 }
