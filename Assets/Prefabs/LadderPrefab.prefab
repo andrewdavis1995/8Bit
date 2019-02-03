@@ -130,6 +130,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 495736511003d1944ae3275a9a38cd10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DeleteRigidBody: 1
 --- !u!114 &114704449056189414
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -143,6 +144,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TopPosition: 0.38
   CentralXposition: -2.65
+  BottomYPosition: 0
 --- !u!212 &212110651302503146
 SpriteRenderer:
   m_ObjectHideFlags: 1

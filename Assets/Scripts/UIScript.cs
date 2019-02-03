@@ -14,6 +14,8 @@ public class UIScript : MonoBehaviour
 
     public Sprite[] Collectables;
 
+    public Image HealthBar;
+
     public PlayerScript Player;
 
     public Transform SpeechOptionPrefab;
@@ -32,7 +34,7 @@ public class UIScript : MonoBehaviour
     private int _inventoryIndex = 0;
     private const int INVENTORY_ITEMS = 9;
 
-
+    public Text TxtCoins;
 
     public static UIScript Instance() { return _instance; }
 

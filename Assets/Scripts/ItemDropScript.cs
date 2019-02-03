@@ -25,12 +25,18 @@ public class ItemDropScript : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
+
         if (collision.gameObject.tag.Contains("Ground") || collision.gameObject.tag.Contains("Platform"))
         {
-            _boxCollider.isTrigger = true;
-            Destroy(GetComponent<Rigidbody2D>());
-            //transform.Translate(new Vector3(0, 0.01f, 0));
-            Physics2D.IgnoreCollision(_playerCollider, _boxCollider, false);
+            var script = GetComponent<PersonInteractionScript>();
+            if (script == null || !script.BounceBackBlock)
+            {
+                _boxCollider.isTrigger = true;
+                //transform.Translate(new Vector3(0, 0.01f, 0));
+                Physics2D.IgnoreCollision(_playerCollider, _boxCollider, false);
+                transform.position = new Vector3(transform.position.x, transform.position.y, 1);
+                Destroy(GetComponent<Rigidbody2D>());
+            }
         }
     }
 }

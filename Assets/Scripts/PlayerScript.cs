@@ -12,6 +12,7 @@ public class PlayerScript : MonoBehaviour
     SpriteRenderer _renderer;
     Collider2D _boxCollider;
     Rigidbody2D _rigidBody;
+    private int _coins;
     Quaternion _rotation;
     public AudioSource Sounds;
     public ClimbingScript ClimbingScript;
@@ -20,13 +21,12 @@ public class PlayerScript : MonoBehaviour
     private List<GameObject> _itemsInBounds = new List<GameObject>();
     Collider2D _activeObstacle;
 
-    internal bool IsAlive()
-    {
-        return _alive;
-    }
+    public Sprite[] PunchImages;
 
+    // state
     bool _onGround = false;
     bool _alive = true;
+    bool _punching = false;
     bool _inventoryOpen = false;
     bool _walkOff = false;
     bool _isRunning = false;
@@ -45,12 +45,17 @@ public class PlayerScript : MonoBehaviour
         _rotation = transform.rotation;
     }
 
+    internal bool IsAlive()
+    {
+        return _alive;
+    }
+
     // Update is called once per frame
     void Update()
     {
         if (PersonInteractionScript.ConversationActive || _walkOff || _bounceBack || !_alive) return;
 
-        if (Input.GetButtonDown("Inventory")||(Input.GetKeyDown(KeyCode.I)) && _onGround)
+        if (Input.GetButtonDown("Inventory") || (Input.GetKeyDown(KeyCode.I)) && _onGround)
         {
             _inventoryOpen = UIScript.Instance().ToggleInventory(transform);
         }
@@ -65,7 +70,7 @@ public class PlayerScript : MonoBehaviour
             {
                 Talk();
             }
-            if (Input.GetKeyDown(KeyCode.L) && !_isRunning && _onGround)
+            if (Input.GetKeyDown(KeyCode.L) && !_isRunning && _onGround && !_punching)
             {
                 Punch();
             }
@@ -77,15 +82,48 @@ public class PlayerScript : MonoBehaviour
 
     private void Punch()
     {
-        foreach(var item in _itemsInBounds)
+        _punching = true;
+            bool targetFound = false;
+
+        foreach (var item in _itemsInBounds)
         {
-            var punchable = item.GetComponentInChildren<PunchableObject>();
-            if(punchable != null)
+            var person = item.GetComponentInChildren<PersonInteractionScript>();
+            if (person != null)
             {
-                punchable.Punched();
+                targetFound = true;
+                person.Punched(transform.position.x);
+                _itemsInBounds.Remove(item.gameObject);
+                // TODO: sound effect
                 break;
             }
         }
+
+        if (!targetFound)
+        {
+            foreach (var item in _itemsInBounds)
+            {
+                var punchable = item.GetComponentInChildren<PunchableObject>();
+                if (punchable != null)
+                {
+                    punchable.Punched();
+                    // TODO: sound effect
+                    break;
+                }
+            }
+        }
+
+        StartCoroutine(PunchAnim());
+    }
+
+    private IEnumerator PunchAnim()
+    {
+        _animator.enabled = false;
+        _renderer.sprite = PunchImages[0];
+        yield return new WaitForSeconds(0.1f);
+        _renderer.sprite = PunchImages[1];
+        yield return new WaitForSeconds(0.1f);
+        _animator.enabled = true;
+        _punching = false;
     }
 
     private void Talk()
@@ -101,12 +139,12 @@ public class PlayerScript : MonoBehaviour
                 _animator.SetTrigger("Stop");
                 if (sorted[i].transform.position.x < transform.position.x)
                 {
-                    transform.position = new Vector3(sorted[i].transform.position.x + sorted[i].transform.localScale.x/2 +0.1f, transform.position.y, transform.position.z);
+                    transform.position = new Vector3(sorted[i].transform.position.x + sorted[i].transform.localScale.x / 2 + 0.1f, transform.position.y, transform.position.z);
                     _renderer.flipX = true;
                 }
                 else
                 {
-                    transform.position = new Vector3(sorted[i].transform.position.x - transform.localScale.x/2 -0.1f, transform.position.y, transform.position.z);
+                    transform.position = new Vector3(sorted[i].transform.position.x - transform.localScale.x / 2 - 0.1f, transform.position.y, transform.position.z);
                     _renderer.flipX = false;
                 }
                 sorted[i].GetComponent<PersonInteractionScript>().Converse(transform);
@@ -117,14 +155,15 @@ public class PlayerScript : MonoBehaviour
 
     internal void DropItem(ObjectType obj, bool crafting)
     {
-        for(uint i = 0; i < _collectedObjects.Count; i++)
+        for (uint i = 0; i < _collectedObjects.Count; i++)
         {
-            if(_collectedObjects[(int)i] == obj)
+            if (_collectedObjects[(int)i] == obj)
             {
                 // instantiate
                 if (!crafting)
                 {
                     var creator = GameObject.Find("CollectableCreator").GetComponent<CollectableCreationScript>();
+                    //creator.Create(_collectedObjects.ElementAt((int)i), new Vector3(transform.position.x, transform.position.y, -10), 4);
                     creator.Create(_collectedObjects.ElementAt((int)i), transform.position, 4);
                 }
                 _collectedObjects.RemoveAt((int)i);
@@ -147,7 +186,7 @@ public class PlayerScript : MonoBehaviour
             if (_itemsInBounds[i].tag == "Collectable" && renderer.enabled)
             {
                 _collectedObjects.Add(_itemsInBounds[i].GetComponent<CollectableObject>().ObjectType);
-                 renderer.enabled = false;
+                renderer.enabled = false;
                 _itemsInBounds.RemoveAt(i);
             }
         }
@@ -174,12 +213,12 @@ public class PlayerScript : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if(collision.gameObject.tag == "Person")
+        if (collision.gameObject.tag == "Person")
         {
             Physics2D.IgnoreCollision(collision.collider, GetComponent<Collider2D>());
         }
 
-        if ((collision.transform.tag.Contains("Ground") || collision.transform.tag == "Platform")&& collision.relativeVelocity.y > -1.5f)
+        if ((collision.transform.tag.Contains("Ground") || collision.transform.tag == "Platform") && collision.relativeVelocity.y > -1.5f)
         {
             if (_bounceBack && !_bounceBackBlock && collision.transform.tag.Contains("Ground"))
             {
@@ -240,6 +279,21 @@ public class PlayerScript : MonoBehaviour
         {
             _activeObstacle = collision.GetComponent<Collider2D>();
             Stun(collision.gameObject.GetComponent<ObstacleScript>(), _renderer.flipX ? 1 : -1);
+        }
+        else if (collision.tag == "Coin")
+        {
+            CoinCollected(collision.gameObject);
+        }
+    }
+
+    private void CoinCollected(GameObject gameObject)
+    {
+        _coins++;
+        gameObject.GetComponentInChildren<CoinScript>().Pickup();
+        UIScript.Instance().TxtCoins.text = _coins.ToString();
+        if (_itemsInBounds.Contains(gameObject))
+        {
+            _itemsInBounds.Remove(gameObject);
         }
     }
 
@@ -308,7 +362,7 @@ public class PlayerScript : MonoBehaviour
             }
         }
 
-        if(ClimbingScript.IsClimbing())
+        if (ClimbingScript.IsClimbing())
         {
             if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.Space) || JoystickMovementLeft() || JoystickMovementRight())
             {
@@ -329,7 +383,7 @@ public class PlayerScript : MonoBehaviour
             _animator.ResetTrigger("Run");
             _animator.SetTrigger("Jump");
             _onGround = false;
-            _rigidBody.AddForce(new Vector3(0, 10000, 0));
+            _rigidBody.AddForce(new Vector3(0, 11000, 0));
             Sounds.Play();
         }
     }
@@ -345,7 +399,7 @@ public class PlayerScript : MonoBehaviour
 
     private IEnumerator Disappear(int scene)
     {
-        while(_renderer.color.a > 0)
+        while (_renderer.color.a > 0)
         {
             _renderer.color = new Color(1, 1, 1, _renderer.color.a - 0.02f);
             yield return new WaitForSeconds(0.01f);
@@ -373,6 +427,10 @@ public class PlayerScript : MonoBehaviour
         {
             Die();
         }
+
+        var healthPerc = Health / 100f;
+
+        UIScript.Instance().HealthBar.fillAmount = healthPerc;
     }
 
     private void Die()

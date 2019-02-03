@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Classes;
@@ -13,6 +14,8 @@ public class PersonInteractionScript : MonoBehaviour
     public KnowledgeCategory[] Knowledge;
     public KnowledgeCategory[] KnowledgeRefuse;
     private KnowledgeCategory _currentQuestionType;
+    bool _bounceBack = false;
+    public bool BounceBackBlock = false;
 
     public static bool ConversationActive = false;
 
@@ -20,6 +23,12 @@ public class PersonInteractionScript : MonoBehaviour
     void Start()
     {
         _renderer = GetComponentInChildren<SpriteRenderer>();
+
+        var people = GameObject.FindGameObjectsWithTag("Person");
+        foreach(var p in people)
+        {
+            Physics2D.IgnoreCollision(GetComponent<BoxCollider2D>(), p.GetComponent<BoxCollider2D>());
+        }
     }
 
     // Update is called once per frame
@@ -149,7 +158,7 @@ public class PersonInteractionScript : MonoBehaviour
 
     private string GetAnswer()
     {
-        switch(_currentQuestionType)
+        switch (_currentQuestionType)
         {
             case KnowledgeCategory.HowOldAreYou:
                 return person.Age.ToString();
@@ -160,16 +169,69 @@ public class PersonInteractionScript : MonoBehaviour
             case KnowledgeCategory.WhereToBuyWeapons:
                 return "Try the Blacksmith's shop - just east of here";
 
-                // trials
+            // trials
             case KnowledgeCategory.IsThisADemoLevel:
                 return LocationSpecificData.CurrentLocation == Location.Trials ? "It is indeed!" : "Absolutely not";
 
-                // Caredall
+            // Caredall
             case KnowledgeCategory.WhenWasThisPlaceBuilt:
                 return "1923";
         }
-
-
         return "I don't know, sorry";
+    }
+
+    public void Punched(float playerXPos)
+    {
+        int multiplier = 1;
+        if (playerXPos > transform.position.x)
+        {
+            multiplier = -1;
+        }
+        Stun(multiplier);
+    }
+
+    void Stun(int multiplier)
+    {
+        person.Health -= 20;    // TODO: variable difference
+        if (person.Health > 0)
+        {
+            StartCoroutine(WaitAfterBounceback());
+            StartCoroutine(ResetAfterBounceback());
+            Physics2D.IgnoreCollision(GameObject.Find("Player").GetComponent<BoxCollider2D>(), GetComponent<BoxCollider2D>(), false);
+            _bounceBack = true;
+            gameObject.AddComponent<Rigidbody2D>();
+            GetComponent<Rigidbody2D>().AddForce(new Vector2(multiplier * 100, 200));
+            _renderer.color = new Color(0.8f, 0.2f, 0.2f);
+        }
+        else
+        {
+            Die();
+        }
+    }
+
+    private void Die()
+    {
+        // lie down
+        // enable 'corpse' script
+        // disable interactionscript
+        enabled = false;
+    }
+
+    private IEnumerator WaitAfterBounceback()
+    {
+        // need to wait to avoid hitting floor straight away
+        GetComponent<BoxCollider2D>().isTrigger = false;
+        BounceBackBlock = true;
+        yield return new WaitForSeconds(0.1f);
+        BounceBackBlock = false;
+    }
+
+    private IEnumerator ResetAfterBounceback()
+    {
+        // need to wait to avoid hitting floor straight away
+        yield return new WaitForSeconds(2f);
+        BounceBackBlock = false;
+        _bounceBack = false;
+        _renderer.color = new Color(1, 1, 1);
     }
 }
