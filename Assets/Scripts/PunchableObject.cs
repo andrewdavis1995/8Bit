@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections;
+using UnityEngine;
 
 namespace Assets.Scripts
 {
@@ -7,6 +9,12 @@ namespace Assets.Scripts
         public float Health;
         public float DamangePerPunch;
         public Transform PrefabToCreate;
+        private SpriteRenderer _renderer;
+
+        private void Start()
+        {
+            _renderer = GetComponent<SpriteRenderer>();
+        }
 
         public void Punched()
         {
@@ -21,7 +29,14 @@ namespace Assets.Scripts
                 // give out any collectables
                 Destroy(gameObject);
             }
+            StartCoroutine(WaitAfterBounceback());
+            _renderer.color = new Color(0.8f, 0.2f, 0.2f);
         }
 
+        private IEnumerator WaitAfterBounceback()
+        {
+            yield return new WaitForSeconds(.05f);
+            _renderer.color = new Color(1, 1, 1);
+        }
     }
 }

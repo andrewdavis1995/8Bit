@@ -10,7 +10,7 @@ public class PlayerScript : MonoBehaviour
 {
     Animator _animator;
     SpriteRenderer _renderer;
-    Collider2D _boxCollider;
+    BoxCollider2D _boxCollider;
     Rigidbody2D _rigidBody;
     private int _coins;
     Quaternion _rotation;
@@ -83,12 +83,12 @@ public class PlayerScript : MonoBehaviour
     private void Punch()
     {
         _punching = true;
-            bool targetFound = false;
+        bool targetFound = false;
 
         foreach (var item in _itemsInBounds)
         {
             var person = item.GetComponentInChildren<PersonInteractionScript>();
-            if (person != null)
+            if (person != null && FacingItem(item))
             {
                 targetFound = true;
                 person.Punched(transform.position.x);
@@ -103,7 +103,7 @@ public class PlayerScript : MonoBehaviour
             foreach (var item in _itemsInBounds)
             {
                 var punchable = item.GetComponentInChildren<PunchableObject>();
-                if (punchable != null)
+                if (punchable != null && FacingItem(item))
                 {
                     punchable.Punched();
                     // TODO: sound effect
@@ -113,6 +113,29 @@ public class PlayerScript : MonoBehaviour
         }
 
         StartCoroutine(PunchAnim());
+    }
+
+    private bool FacingItem(GameObject item)
+    {
+        bool facing = false;
+
+        // facing left
+        if (_renderer.flipX)
+        {
+            if (transform.position.x > item.transform.position.x)
+            {
+                facing = true;
+            }
+        }
+        else
+        {
+            if (transform.position.x < item.transform.position.x)
+            {
+                facing = true;
+            }
+        }
+
+        return facing;
     }
 
     private IEnumerator PunchAnim()
@@ -136,6 +159,7 @@ public class PlayerScript : MonoBehaviour
             if (sorted[i].tag == "Person")
             {
                 _animator.ResetTrigger("Run");
+                _animator.ResetTrigger("Crawl");
                 _animator.SetTrigger("Stop");
                 if (sorted[i].transform.position.x < transform.position.x)
                 {
@@ -196,6 +220,7 @@ public class PlayerScript : MonoBehaviour
     {
         _animator.ResetTrigger("Jump");
         _animator.ResetTrigger("Run");
+        _animator.ResetTrigger("Crawl");
         _animator.SetTrigger("Climb");
         _rigidBody.isKinematic = true;
     }
@@ -206,6 +231,7 @@ public class PlayerScript : MonoBehaviour
         {
             _animator.ResetTrigger("Jump");
             _animator.ResetTrigger("Run");
+            _animator.ResetTrigger("Crawl");
             _animator.SetTrigger("Climb");
         }
         _rigidBody.velocity = Vector3.zero;
@@ -236,7 +262,14 @@ public class PlayerScript : MonoBehaviour
 
             if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.LeftArrow) || JoystickMovementLeft() || JoystickMovementRight())
             {
-                _animator.SetTrigger("Run");
+                if (Input.GetKey(KeyCode.DownArrow))
+                {
+                    _animator.SetTrigger("Crawl");
+                }
+                else
+                {
+                    _animator.SetTrigger("Run");
+                }
             }
             else
             {
@@ -330,14 +363,28 @@ public class PlayerScript : MonoBehaviour
     {
         if (!ClimbingScript.IsClimbing())
         {
-            float speed = 4;
+            float speed = 4; string trigger = "Run";
             if (JoystickMovementLeft() || JoystickMovementRight()) speed *= Input.GetAxis("Horizontal");
+            if (Input.GetKey(KeyCode.DownArrow))
+            {
+                speed *= .4f;
+                trigger = "Crawl";
+                _boxCollider.offset = new Vector2(0.002125877f, -0.2140256f);
+                _boxCollider.size = new Vector2(0.774232f, 0.4769177f);
+            }
+            else
+            {
+                _boxCollider.offset = new Vector2(0.004326046f, 0.002850294f);
+                _boxCollider.size = new Vector2(0.5371746f, 0.8691919f);
+            }
+
             if (Input.GetKey(KeyCode.RightArrow) || JoystickMovementRight())
             {
                 _isRunning = true;
-                if (_onGround && _animator.GetBool("Run") == false)
+                if (_onGround && _animator.GetBool(trigger) == false)
                 {
-                    _animator.SetTrigger("Run");
+                    Debug.Log(trigger + " set");
+                    _animator.SetTrigger(trigger);
                 }
                 _renderer.flipX = false;
 
@@ -347,9 +394,10 @@ public class PlayerScript : MonoBehaviour
             {
                 if (speed > 0) speed *= -1;
                 _isRunning = true;
-                if (_onGround && _animator.GetBool("Run") == false)
+                if (_onGround && _animator.GetBool(trigger) == false)
                 {
-                    _animator.SetTrigger("Run");
+                    Debug.Log(trigger + " set");
+                    _animator.SetTrigger(trigger);
                 }
                 _renderer.flipX = true;
                 transform.Translate(new Vector3(speed * Time.deltaTime, 0, 0));
@@ -369,6 +417,7 @@ public class PlayerScript : MonoBehaviour
                 _animator.ResetTrigger("Climb");
                 _animator.ResetTrigger("Stop");
                 _animator.ResetTrigger("Run");
+                _animator.ResetTrigger("Crawl");
                 _animator.ResetTrigger("Jump");
                 ClimbingScript.IsClimbing(false);
                 _rigidBody.isKinematic = false;
@@ -381,6 +430,7 @@ public class PlayerScript : MonoBehaviour
             _animator.ResetTrigger("Climb");
             _animator.ResetTrigger("Stop");
             _animator.ResetTrigger("Run");
+            _animator.ResetTrigger("Crawl");
             _animator.SetTrigger("Jump");
             _onGround = false;
             _rigidBody.AddForce(new Vector3(0, 11000, 0));

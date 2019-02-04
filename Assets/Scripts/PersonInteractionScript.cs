@@ -3,12 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Classes;
+using Assets.Scripts;
 using UnityEngine;
 
 public class PersonInteractionScript : MonoBehaviour
 {
     public Person person;
     private SpriteRenderer _renderer;
+    public Sprite DeadImage;
     private bool _isInteracting = false;
     public StateMachine Status = new StateMachine();
     public KnowledgeCategory[] Knowledge;
@@ -212,9 +214,19 @@ public class PersonInteractionScript : MonoBehaviour
     private void Die()
     {
         // lie down
+        _renderer.sprite = DeadImage;
         // enable 'corpse' script
         // disable interactionscript
         enabled = false;
+        // kill scripts
+        var patrol = GetComponent<PatrolScript>();
+        if (patrol) patrol.enabled = false;
+        var wander = GetComponent<WanderScript>();
+        if (wander) wander.enabled = false;
+        var follow = GetComponent<FollowScript>();
+        if (follow) follow.enabled = false;
+        // change colour
+        _renderer.color = new Color(0.9f, 0.9f, 0.9f);
     }
 
     private IEnumerator WaitAfterBounceback()
@@ -232,6 +244,9 @@ public class PersonInteractionScript : MonoBehaviour
         yield return new WaitForSeconds(2f);
         BounceBackBlock = false;
         _bounceBack = false;
-        _renderer.color = new Color(1, 1, 1);
+        if (person.Health > 0)
+        {
+            _renderer.color = new Color(1, 1, 1);
+        }
     }
 }

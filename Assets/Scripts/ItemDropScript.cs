@@ -26,7 +26,7 @@ public class ItemDropScript : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
 
-        if (collision.gameObject.tag.Contains("Ground") || collision.gameObject.tag.Contains("Platform"))
+        if (collision.gameObject.tag.Contains("Ground") || (gameObject.tag != "Person" && collision.gameObject.tag.Contains("Platform")))
         {
             var script = GetComponent<PersonInteractionScript>();
             if (script == null || !script.BounceBackBlock)
