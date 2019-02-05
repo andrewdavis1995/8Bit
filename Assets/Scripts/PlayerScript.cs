@@ -8,6 +8,9 @@ using UnityEngine.SceneManagement;
 
 public class PlayerScript : MonoBehaviour
 {
+    private const float MAX_HEALTH = 100;
+
+
     Animator _animator;
     SpriteRenderer _renderer;
     BoxCollider2D _boxCollider;
@@ -317,16 +320,38 @@ public class PlayerScript : MonoBehaviour
         {
             CoinCollected(collision.gameObject);
         }
+        else if (collision.tag == "Heart")
+        {
+            HealthGained(collision.gameObject);
+        }
     }
 
-    private void CoinCollected(GameObject gameObject)
+    private void HealthGained(GameObject go)
+    {
+        if (Health < MAX_HEALTH)
+        {
+            Health += 10;
+        }
+        if (Health > MAX_HEALTH)
+        {
+            Health = MAX_HEALTH;
+        }
+        if (_itemsInBounds.Contains(go))
+        {
+            _itemsInBounds.Remove(go);
+        }
+        Destroy(go);
+        UpdateHealthBar();
+    }
+
+    private void CoinCollected(GameObject go)
     {
         _coins++;
-        gameObject.GetComponentInChildren<CoinScript>().Pickup();
+        go.GetComponentInChildren<CoinScript>().Pickup();
         UIScript.Instance().TxtCoins.text = _coins.ToString();
-        if (_itemsInBounds.Contains(gameObject))
+        if (_itemsInBounds.Contains(go))
         {
-            _itemsInBounds.Remove(gameObject);
+            _itemsInBounds.Remove(go);
         }
     }
 
@@ -477,9 +502,12 @@ public class PlayerScript : MonoBehaviour
         {
             Die();
         }
+        UpdateHealthBar();
+    }
 
-        var healthPerc = Health / 100f;
-
+    private void UpdateHealthBar()
+    {
+        var healthPerc = Health / MAX_HEALTH;
         UIScript.Instance().HealthBar.fillAmount = healthPerc;
     }
 

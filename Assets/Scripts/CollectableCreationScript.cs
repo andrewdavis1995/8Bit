@@ -21,7 +21,7 @@ public class CollectableCreationScript : MonoBehaviour
 
     public void Create(Transform prefab, Vector3 position, ObjectType item = ObjectType.None, int xAdd = 0)
     {
-        var obj = Instantiate(prefab, position, Quaternion.identity);
+        var obj = Instantiate(prefab, new Vector3(position.x, position.y, 2), Quaternion.identity);
 
         if (item == ObjectType.Ladder)
         {
